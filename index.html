@@ -1,0 +1,1829 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ISTQB CTFL v4.0 — Trener egzaminacyjny</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0e1014">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ISTQB Trener">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root{
+    --bg:#0e1014; --surface:#171a21; --surface2:#1e222c; --surface3:#252b38;
+    --border:#2a3140; --border2:#374055;
+    --text:#e7ebf2; --muted:#97a1b2; --muted2:#6f7a8c;
+    --accent:#5b9cff; --accent-d:#3d7de0;
+    --ok:#34c77b; --ok-bg:#11331f; --ok-bd:#1f6b41;
+    --bad:#ff6b6b; --bad-bg:#3a1414; --bad-bd:#8a2f2f;
+    --warn:#f3c969;
+    --radius:14px; --radius-sm:9px;
+    --shadow:0 8px 30px rgba(0,0,0,.45);
+    --mono:'SFMono-Regular',ui-monospace,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:radial-gradient(1200px 600px at 50% -10%,#1a2030 0%,var(--bg) 55%) fixed;
+    color:var(--text); font-family:var(--sans); line-height:1.55;
+    -webkit-font-smoothing:antialiased; font-size:16px;
+  }
+  a{color:var(--accent)}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 18px 80px}
+
+  /* Header */
+  header.app{display:flex;flex-wrap:wrap;align-items:center;gap:14px 18px;margin-bottom:18px}
+  .brand{display:flex;flex-direction:column;gap:2px}
+  .brand h1{font-size:20px;margin:0;letter-spacing:.2px;font-weight:700}
+  .brand .sub{font-size:13px;color:var(--muted)}
+  .countdown{margin-left:auto;display:flex;align-items:center;gap:10px;background:var(--surface);
+    border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 14px}
+  .countdown .num{font-size:22px;font-weight:800;color:var(--warn);line-height:1}
+  .countdown .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+
+  /* Stat strip */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+    padding:10px 12px;text-align:center}
+  .stat .v{font-size:20px;font-weight:800;line-height:1.1}
+  .stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+  .stat .v.ok{color:var(--ok)} .stat .v.acc{color:var(--accent)}
+
+  /* progress bar */
+  .pbar{height:8px;background:var(--surface2);border:1px solid var(--border);border-radius:99px;overflow:hidden;margin-bottom:16px}
+  .pbar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent-d),var(--accent));transition:width .35s ease}
+
+  /* Controls */
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding-left:2px}
+  select,.btn{font-family:inherit;font-size:14px;color:var(--text);background:var(--surface2);
+    border:1px solid var(--border2);border-radius:var(--radius-sm);padding:9px 12px;cursor:pointer}
+  select:hover,.btn:hover{border-color:var(--accent)}
+  select{min-width:240px;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2397a1b2' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px}
+  .btn{display:inline-flex;align-items:center;gap:7px}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#06101f;font-weight:700}
+  .btn.primary:hover{background:#6ba6ff}
+  .btn.ghost{background:transparent}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .toggle{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
+  .toggle input{accent-color:var(--accent);width:16px;height:16px}
+  .spacer{flex:1 1 auto}
+
+  /* Question navigator grid */
+  .navgrid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+  .navgrid button{width:30px;height:30px;border-radius:7px;border:1px solid var(--border);
+    background:var(--surface2);color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;padding:0;
+    display:flex;align-items:center;justify-content:center;transition:transform .08s}
+  .navgrid button:hover{transform:translateY(-1px);border-color:var(--accent)}
+  .navgrid button.cur{outline:2px solid var(--accent);outline-offset:1px;color:var(--text)}
+  .navgrid button.ok{background:var(--ok-bg);border-color:var(--ok-bd);color:#8fe6b6}
+  .navgrid button.bad{background:var(--bad-bg);border-color:var(--bad-bd);color:#ffb0b0}
+
+  /* Card */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:22px 22px 20px;margin-bottom:18px}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+  .tag{font-size:11px;font-weight:600;padding:4px 9px;border-radius:99px;border:1px solid var(--border2);
+    background:var(--surface2);color:var(--muted);letter-spacing:.3px}
+  .tag.ch{color:#bcd2ff;border-color:#2c4a82;background:#15233f}
+  .tag.lo{font-family:var(--mono);font-size:10.5px}
+  .tag.k{color:#d8c4ff;border-color:#4a3a78;background:#241b3a}
+  .qnum{margin-left:auto;font-size:13px;color:var(--muted2);font-weight:600}
+
+  .scenario{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:var(--radius-sm);padding:13px 15px;margin-bottom:16px;font-size:14.5px;color:#d6dced}
+  .scenario p{margin:0 0 8px} .scenario p:last-child{margin-bottom:0}
+  .scenario ul{margin:6px 0 0;padding-left:20px} .scenario li{margin:2px 0}
+  .scenario table{border-collapse:collapse;margin:10px 0 2px;font-size:13px;width:100%}
+  .scenario th,.scenario td{border:1px solid var(--border2);padding:5px 9px;text-align:center}
+  .scenario th{background:var(--surface3);color:#c7d0e0;font-weight:600}
+  .scenario .note{font-size:12.5px;color:var(--muted)}
+  .scenario .diagram{display:flex;justify-content:center;margin:8px 0 2px}
+  .scenario .diagram svg{max-width:100%;height:auto}
+
+  .qtext{font-size:17px;font-weight:600;margin:0 0 6px;line-height:1.5}
+  .selhint{font-size:12.5px;color:var(--warn);margin:0 0 14px;font-weight:600}
+
+  .opts{display:flex;flex-direction:column;gap:10px}
+  .opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;
+    background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);
+    padding:13px 15px;cursor:pointer;color:var(--text);font:inherit;transition:border-color .12s,background .12s,transform .06s}
+  .opt:hover:not(:disabled){border-color:var(--accent);background:var(--surface3)}
+  .opt:active:not(:disabled){transform:scale(.995)}
+  .opt:disabled{cursor:default}
+  .opt .letter{flex:0 0 26px;width:26px;height:26px;border-radius:7px;border:1px solid var(--border2);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--muted);margin-top:1px}
+  .opt .otext{flex:1;font-size:15px}
+  .opt.sel{border-color:var(--accent)} .opt.sel .letter{background:var(--accent);color:#06101f;border-color:var(--accent)}
+  .opt.correct{border-color:var(--ok-bd);background:var(--ok-bg)}
+  .opt.correct .letter{background:var(--ok);color:#05210f;border-color:var(--ok)}
+  .opt.incorrect{border-color:var(--bad-bd);background:var(--bad-bg)}
+  .opt.incorrect .letter{background:var(--bad);color:#2a0808;border-color:var(--bad)}
+  .opt .mark{margin-left:auto;font-weight:800;font-size:15px;opacity:0;align-self:center}
+  .opt.correct .mark{opacity:1;color:var(--ok)} .opt.incorrect .mark{opacity:1;color:var(--bad)}
+
+  .checkrow{margin-top:14px;display:flex;gap:10px;align-items:center}
+
+  /* Explanation */
+  .explain{margin-top:18px;border-top:1px dashed var(--border2);padding-top:16px;display:none}
+  .explain.show{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .verdict{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;margin-bottom:12px}
+  .verdict .pill{font-size:12px;padding:3px 10px;border-radius:99px}
+  .verdict.good{color:var(--ok)} .verdict.good .pill{background:var(--ok-bg);border:1px solid var(--ok-bd)}
+  .verdict.poor{color:var(--bad)} .verdict.poor .pill{background:var(--bad-bg);border:1px solid var(--bad-bd)}
+  .exptitle{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 8px}
+  .exrow{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:14.5px}
+  .exrow:last-child{border-bottom:none}
+  .exrow .el{flex:0 0 24px;width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:12px;border:1px solid var(--border2);color:var(--muted)}
+  .exrow.c .el{background:var(--ok-bg);border-color:var(--ok-bd);color:#8fe6b6}
+  .exrow.w .el{background:var(--bad-bg);border-color:var(--bad-bd);color:#ffb0b0}
+  .exrow .et{flex:1;color:#d3dae8}
+  .exgeneral{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);
+    padding:12px 14px;margin-bottom:12px;font-size:14.5px;color:#d6dced;white-space:pre-line}
+  .syref{margin-top:12px;font-size:12.5px;color:var(--muted2);font-family:var(--mono)}
+
+  /* footer nav */
+  .nav{display:flex;gap:10px;align-items:center}
+  .nav .spacer{flex:1}
+
+  /* Summary */
+  .summary{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:24px;display:none}
+  .summary.show{display:block}
+  .summary h2{margin:0 0 4px;font-size:22px}
+  .bigscore{font-size:54px;font-weight:800;line-height:1;margin:14px 0 4px}
+  .bigscore small{font-size:18px;color:var(--muted);font-weight:600}
+  .verdictline{font-size:15px;margin-bottom:20px}
+  .chbreak{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+  .chrow{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center}
+  .chrow .nm{font-size:14px}
+  .chrow .ct{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .chbar{grid-column:1/3;height:7px;background:var(--surface2);border:1px solid var(--border);border-radius:99px;overflow:hidden}
+  .chbar > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent-d),var(--ok))}
+  .smActions{display:flex;flex-wrap:wrap;gap:10px}
+
+  .foot{margin-top:26px;font-size:12px;color:var(--muted2);line-height:1.6}
+  .foot b{color:var(--muted)}
+  kbd{font-family:var(--mono);font-size:11px;background:var(--surface3);border:1px solid var(--border2);
+    border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--muted)}
+  .hidden{display:none!important}
+
+  /* tabs */
+  .tabs{display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid var(--border)}
+  .tab{font:inherit;font-size:15px;font-weight:600;color:var(--muted);background:none;border:none;padding:11px 20px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tab:hover{color:var(--text)}
+  .tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+  /* baner pytań nieoficjalnych */
+  .practicewarn{background:var(--surface2);border:1px solid #7a5d1f;border-left:4px solid var(--warn);
+    border-radius:var(--radius-sm);padding:12px 15px;margin-bottom:16px;font-size:13.5px;color:#e8d9b0;line-height:1.5}
+  .practicewarn b{color:var(--warn)}
+
+  /* flashcards */
+  .cardstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+  .flashwrap{margin:8px 0 16px}
+  .flashcard{min-height:300px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:16px 22px 26px;cursor:pointer;display:flex;flex-direction:column;text-align:center;transition:border-color .15s}
+  .flashcard:hover{border-color:var(--border2)}
+  .fc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;width:100%}
+  .flashcard .fc-cat{font-size:11px;font-weight:700;color:#bcd2ff;border:1px solid #2c4a82;background:#15233f;border-radius:99px;padding:4px 10px;text-align:left}
+  .flashcard .fc-known{font-size:11px;font-weight:700;white-space:nowrap;padding-top:4px}
+  .fc-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;padding:16px 0 4px}
+  .flashcard .fc-front{font-size:30px;font-weight:800;line-height:1.25;margin-bottom:6px}
+  .flashcard .fc-en{font-size:15px;color:var(--muted);font-style:italic;margin-bottom:10px;min-height:18px}
+  .flashcard .fc-back{font-size:16px;line-height:1.65;color:#d6dced;max-width:640px;border-top:1px dashed var(--border2);padding-top:16px;margin-top:6px;display:none;text-align:left}
+  .flashcard.revealed .fc-back{display:block}
+  .flashcard .fc-hint{font-size:12.5px;color:var(--muted2);margin-top:18px}
+  .flashcard.revealed .fc-hint{display:none}
+  .flashnav{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .flashnav .spacer{flex:1}
+  .flashnav .counter{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .btn.know{background:var(--ok);border-color:var(--ok);color:#05210f;font-weight:700}
+  .btn.know:hover{background:#4cd98c}
+  .btn.repeat{background:var(--surface2)}
+  .cardfoot{margin-top:18px;font-size:12px;color:var(--muted2)}
+
+  /* source badge */
+  .srcbadge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;letter-spacing:.2px}
+  .srcbadge.off{color:#7ee6a8;border:1px solid #1f6b41;background:#0f2a1b}
+  .srcbadge.own{color:#f3c969;border:1px solid #7a5d1f;background:#2a2310}
+  .srcbadge .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+  .mstat{margin-left:auto;display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+  .mstat .mpill{font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:3px 9px}
+  .mstat .mpill.done{color:#8fe6b6;border-color:var(--ok-bd);background:var(--ok-bg)}
+  /* nav grid extra states */
+  .navgrid button.amber{background:#2c2410;border-color:#7a5d1f;color:#f0d28a}
+  /* segmented control */
+  .seg{display:inline-flex;border:1px solid var(--border2);border-radius:var(--radius-sm);overflow:hidden}
+  .seg button{font:inherit;font-size:13px;color:var(--muted);background:var(--surface2);border:none;padding:9px 13px;cursor:pointer;border-right:1px solid var(--border2)}
+  .seg button:last-child{border-right:none}
+  .seg button.on{background:var(--accent);color:#06101f;font-weight:700}
+  .masterbar{display:flex;align-items:center;gap:10px;margin:-4px 0 16px}
+  .masterbar .lbl{font-size:12px;color:var(--muted);white-space:nowrap}
+  .masterbar .track{flex:1;height:9px;background:var(--surface2);border:1px solid var(--border);border-radius:99px;overflow:hidden}
+  .masterbar .track > i{display:block;height:100%;width:0;background:linear-gradient(90deg,#1f9d57,var(--ok));transition:width .35s ease}
+  .masterbar .pct{font-size:12px;font-weight:700;color:#8fe6b6;white-space:nowrap;font-variant-numeric:tabular-nums}
+  /* === EGZAMINY: ekran wyboru === */
+  .examselect{margin-bottom:18px}
+  .exsel-intro{margin-bottom:18px}
+  .exsel-eyebrow{display:inline-block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+  .exsel-title{font-size:30px;font-weight:800;margin:0 0 8px;letter-spacing:-.5px}
+  .exsel-sub{font-size:14.5px;color:var(--muted);max-width:640px;margin:0;line-height:1.6}
+  .exsel-sub b{color:var(--text)}
+  .exsel-opts{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)}
+  .exsel-opts-lbl{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700}
+  .exsel-opts-note{font-size:12px;color:var(--muted2)}
+  .exsel-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .excard{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;transition:border-color .15s,transform .08s}
+  .excard:hover{border-color:var(--border2);transform:translateY(-2px)}
+  .excard-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .excard-badge{font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:4px 9px;border-radius:99px}
+  .excard-badge.off{color:#7ee6a8;border:1px solid #1f6b41;background:#0f2a1b}
+  .excard-badge.own{color:#f3c969;border:1px solid #7a5d1f;background:#2a2310}
+  .excard h3{font-size:17px;margin:0;font-weight:700}
+  .excard p{font-size:13px;color:var(--muted);margin:0 0 14px;line-height:1.5;flex:1}
+  .excard-meta{display:flex;gap:16px;font-size:12px;color:var(--muted2);margin-bottom:14px}
+  .excard-meta b{color:var(--text);font-variant-numeric:tabular-nums}
+  .excard .btn.primary{width:100%;justify-content:center}
+  .exresume{background:var(--surface2);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .exresume .rtxt{flex:1;font-size:13.5px;color:var(--text)}
+
+  /* === EGZAMINY: pasek z zegarem (sticky podczas egzaminu) === */
+  #examBar{position:sticky;top:8px;z-index:20;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+    padding:12px 16px 15px;margin-bottom:16px;font-size:14px;color:var(--muted);box-shadow:0 6px 22px rgba(0,0,0,.4)}
+  #examBar b{color:var(--text)} #examBar .spacer{flex:1}
+  #examBar.review{border-color:var(--accent);position:static;box-shadow:none}
+  .ex-clock{display:flex;flex-direction:column;line-height:1}
+  .ex-clock-num{font-family:var(--mono);font-size:27px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;letter-spacing:.5px}
+  .ex-clock-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted2);margin-top:3px}
+  #examBar.warn .ex-clock-num{color:var(--warn)}
+  #examBar.danger .ex-clock-num{color:var(--bad)}
+  .ex-pace{font-size:11.5px;font-weight:700;padding:4px 11px;border-radius:99px;white-space:nowrap}
+  .ex-pace.ok{color:#8fe6b6;background:var(--ok-bg);border:1px solid var(--ok-bd)}
+  .ex-pace.behind{color:#f0d28a;background:#2c2410;border:1px solid #7a5d1f}
+  .ex-pace.late{color:#ffb0b0;background:var(--bad-bg);border:1px solid var(--bad-bd)}
+  .ex-count{font-variant-numeric:tabular-nums}
+  .ex-timerbar{position:absolute;left:0;right:0;bottom:0;height:3px;overflow:hidden;border-radius:0 0 var(--radius-sm) var(--radius-sm)}
+  .ex-timerbar > i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--accent-d),var(--accent));transition:width 1s linear}
+  #examBar.warn .ex-timerbar > i{background:var(--warn)}
+  #examBar.danger .ex-timerbar > i{background:var(--bad)}
+  #examBar.review .ex-timerbar,#examBar.review .ex-clock,#examBar.review .ex-pace{display:none}
+  .ex-live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  @media(prefers-reduced-motion:reduce){.ex-timerbar > i{transition:none}}
+
+  /* === PODCAST === */
+  .pod-hero{margin-bottom:18px}
+  .pod-eyebrow{display:inline-block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+  .pod-title{font-size:30px;font-weight:800;margin:0 0 8px;letter-spacing:-.5px}
+  .pod-sub{font-size:14.5px;color:var(--muted);max-width:640px;margin:0;line-height:1.6}
+  .pod-player{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;position:sticky;top:8px;z-index:20;box-shadow:0 6px 22px rgba(0,0,0,.4)}
+  #podAudio{width:100%;height:40px;display:block}
+  .pod-now{font-size:13px;color:var(--muted);margin-top:10px;font-weight:600}
+  .pod-now b{color:var(--text)}
+  .pod-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+  .pod-item{display:flex;align-items:center;gap:14px;width:100%;text-align:left;font:inherit;cursor:pointer;
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;color:var(--text);transition:border-color .12s,background .12s}
+  .pod-item:hover{border-color:var(--accent);background:var(--surface2)}
+  .pod-item.on{border-color:var(--accent);background:var(--surface3)}
+  .pod-idx{flex:0 0 30px;width:30px;height:30px;border-radius:8px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--muted)}
+  .pod-item.on .pod-idx{background:var(--accent);color:#06101f;border-color:var(--accent)}
+  .pod-name{flex:1;font-size:15px;font-weight:600}
+  .pod-play{font-size:13px;color:var(--muted2)}
+  .pod-item.on .pod-play{color:var(--accent)}
+  .pod-item.on .pod-play::after{content:" gra"}
+  .pod-foot{display:flex;flex-direction:column;gap:8px;padding-top:6px}
+  .pod-note{font-size:12px;color:var(--muted2)}
+  .exscore.pass{color:var(--ok)} .exscore.fail{color:var(--bad)}
+  .exverdict .pill{font-size:13px;font-weight:800;padding:4px 14px;border-radius:99px;margin-right:10px}
+  .exverdict .pill.pass{color:#8fe6b6;background:var(--ok-bg);border:1px solid var(--ok-bd)}
+  .exverdict .pill.fail{color:#ffb0b0;background:var(--bad-bg);border:1px solid var(--bad-bd)}
+  .histbox{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px}
+  .histbox h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700}
+  .histstats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+  .histstats .hs{text-align:center} .histstats .hs .v{font-size:18px;font-weight:800} .histstats .hs .k{font-size:11px;color:var(--muted)}
+  .histrow{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border)}
+  .histrow:last-child{border-bottom:none}
+  .histrow .r-pass{color:var(--ok);font-weight:700} .histrow .r-fail{color:var(--bad);font-weight:700}
+  .histbox .clr{margin-top:10px;font-size:12px;color:var(--muted2);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0}
+  @media(max-width:560px){
+    .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .tab{padding:10px 12px;font-size:13.5px;white-space:nowrap}
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .exsel-grid{grid-template-columns:1fr}
+    .exsel-title{font-size:24px}
+    .ex-clock-num{font-size:24px}
+    .countdown{margin-left:0;order:3}
+    select{min-width:0;width:100%}
+    .controls .field{flex:1 1 100%}
+    .seg{width:100%}
+    .seg button{flex:1;text-align:center}
+    .flashcard .fc-front{font-size:24px}
+    .wrap{padding:18px 14px 70px}
+    .opt{padding:12px}
+    .opt .otext{font-size:14.5px}
+    .nav{flex-wrap:wrap}
+    .flashnav .counter{order:5;width:100%;text-align:center;margin-top:4px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="app">
+    <div class="brand">
+      <h1>ISTQB® CTFL v4.0 — Trener</h1>
+      <span class="sub">Foundation Level &nbsp;·&nbsp; oficjalne Sample Exams (zestawy&nbsp;A&nbsp;+&nbsp;B) &nbsp;·&nbsp; 106 pytań &nbsp;·&nbsp; 100% pokrycia sylabusa</span>
+    </div>
+    <div class="countdown" id="cdBox" title="Kliknij, aby ustawić datę egzaminu" style="cursor:pointer">
+      <div>
+        <div class="num" id="cdNum">–</div>
+        <div class="lbl">dni do egzaminu</div>
+        <div style="font-size:10px;color:var(--muted2);margin-top:2px" id="cdHint">kliknij, by ustawić</div>
+      </div>
+      <input type="date" id="cdInput" style="position:absolute;opacity:0;pointer-events:none">
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="quiz">Oficjalne</button>
+    <button class="tab" data-tab="practice">Trening</button>
+    <button class="tab" data-tab="exam">Egzaminy</button>
+    <button class="tab" data-tab="podcast">Podcast</button>
+    <button class="tab" data-tab="cards">Fiszki</button>
+  </div>
+
+  <div id="tabQuiz">
+  <div id="practiceWarn" class="hidden practicewarn">
+    <b>Pytania NIEOFICJALNE.</b> Wygenerowane na podstawie sylabusa ISTQB CTFL v4.0 do dodatkowego treningu (68 pytan, pokrycie wszystkich celow nauczania). To <b>NIE sa oryginalne pytania ISTQB</b> i nie pochodza z oficjalnych egzaminow probnych.
+  </div>
+  <div id="studyStats">
+    <div class="stats">
+      <div class="stat"><div class="v ok" id="stMastered">0 / 0</div><div class="k">Opanowane</div></div>
+      <div class="stat"><div class="v acc" id="stPct">—</div><div class="k">Skuteczność</div></div>
+      <div class="stat"><div class="v" id="stRemain">0</div><div class="k">Pozostało</div></div>
+      <div class="stat"><div class="v" id="stSeen">0</div><div class="k">Odpowiedzi</div></div>
+    </div>
+    <div class="masterbar">
+      <span class="lbl">Opanowanie materiału</span>
+      <span class="track"><i id="masterFill"></i></span>
+      <span class="pct" id="masterPct">0%</span>
+    </div>
+  </div>
+  <!-- Ekran wyboru egzaminu (zakładka Egzaminy) -->
+  <section id="examSelect" class="examselect hidden">
+    <div class="exsel-intro">
+      <span class="exsel-eyebrow">Egzamin próbny ISTQB CTFL v4.0</span>
+      <h2 class="exsel-title">Sprawdź się na czas</h2>
+      <p class="exsel-sub">40 pytań · próg zaliczenia <b>26/40 (65%)</b> · brak punktów ujemnych za zgadywanie. Zegar startuje po kliknięciu <b>Rozpocznij</b> i nie da się go zatrzymać — dokładnie jak na prawdziwym egzaminie.</p>
+    </div>
+    <div class="exsel-opts">
+      <span class="exsel-opts-lbl">Limit czasu</span>
+      <div class="seg" id="examTimeSeg">
+        <button type="button" data-min="60" class="on">60 min</button>
+        <button type="button" data-min="75">75 min</button>
+      </div>
+      <span class="exsel-opts-note">75 min = +25%, czas dla zdających w języku innym niż ojczysty</span>
+    </div>
+    <div id="examResume" class="exresume hidden"></div>
+    <div class="exsel-grid" id="examCards"></div>
+  </section>
+
+  <!-- Pasek egzaminu z zegarem (sticky podczas egzaminu) -->
+  <div id="examBar" class="hidden">
+    <div class="ex-clock" id="exClockWrap">
+      <span class="ex-clock-num" id="exClock">60:00</span>
+      <span class="ex-clock-lbl">pozostało</span>
+    </div>
+    <span class="ex-pace" id="exPace"></span>
+    <span id="examBarTxt">Egzamin</span>
+    <span class="spacer"></span>
+    <span class="ex-count">Odpowiedziano: <b id="exAns">0</b> / 40</span>
+    <div class="ex-timerbar"><i id="exTimerFill"></i></div>
+    <div class="ex-live" id="exLive" aria-live="polite"></div>
+  </div>
+
+  <div class="controls" id="studyControls">
+    <div class="field" id="fldChapter">
+      <label for="chapter">Rozdział sylabusa</label>
+      <select id="chapter"></select>
+    </div>
+    <div class="field" id="fldSrc">
+      <label for="srcSel">Źródło / zestaw</label>
+      <select id="srcSel">
+        <option value="all" selected>Wszystkie (106 pytań)</option>
+        <option value="A-egz">Oficjalne A — egzamin (40)</option>
+        <option value="A-dod">Oficjalne A — dodatkowe (26)</option>
+        <option value="B">Oficjalne B (40)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Tryb</label>
+      <div class="seg" id="modeSeg">
+        <button data-mode="drill" class="on" title="Błędne wracają częściej; pętla aż opanujesz wszystko">Nauka</button>
+        <button data-mode="linear" title="Po kolei, według numeru">Po kolei</button>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <label class="toggle" id="fldOnlyUn"><input type="checkbox" id="onlyUn"> Tylko nieopanowane</label>
+    <button class="btn ghost" id="btnSummary" title="Pokaż podsumowanie">Σ Podsumowanie</button>
+    <button class="btn ghost" id="btnReset" title="Wyczyść cały postęp">↺ Reset</button>
+  </div>
+
+  <div class="navgrid" id="navgrid"></div>
+
+  <!-- Quiz card -->
+  <section class="card" id="card">
+    <div class="meta">
+      <span class="srcbadge off" id="mSrc"><span class="dot"></span>Oficjalne ISTQB</span>
+      <span class="tag ch" id="mCh">Rozdział</span>
+      <span class="tag lo" id="mLo">LO</span>
+      <span class="tag k" id="mK">K</span>
+      <span class="mstat" id="mStat"><span class="qnum" id="mNum">#</span></span>
+    </div>
+    <div class="scenario" id="scenario"></div>
+    <h2 class="qtext" id="qtext"></h2>
+    <p class="selhint" id="selhint"></p>
+    <div class="opts" id="opts"></div>
+    <div class="checkrow" id="checkrow"></div>
+
+    <div class="explain" id="explain">
+      <div class="verdict" id="verdict"></div>
+      <div id="expGeneralWrap"></div>
+      <p class="exptitle">Uzasadnienie wszystkich opcji</p>
+      <div id="exrows"></div>
+      <div class="syref" id="syref"></div>
+    </div>
+
+    <div class="nav" style="margin-top:18px">
+      <button class="btn" id="btnPrev">← Poprzednie</button>
+      <span class="spacer"></span>
+      <button class="btn hidden" id="btnExamBack">↩ Wynik</button>
+      <button class="btn ghost" id="btnSkip">Pomiń</button>
+      <button class="btn primary hidden" id="btnFinish">Zakończ egzamin ✓</button>
+      <button class="btn primary" id="btnNext">Następne →</button>
+    </div>
+  </section>
+
+  <!-- Wynik egzaminu -->
+  <section class="summary" id="examResult">
+    <h2>Wynik egzaminu</h2>
+    <div class="bigscore exscore" id="exScore">—</div>
+    <div class="verdictline exverdict" id="exVerdict"></div>
+    <div class="chbreak" id="exBreak"></div>
+    <div class="smActions" style="margin-bottom:20px">
+      <button class="btn primary" id="exNew">Nowy egzamin</button>
+      <button class="btn" id="exReview">Przeglądaj odpowiedzi</button>
+      <button class="btn ghost" id="exClose">Zamknij</button>
+    </div>
+    <div id="exHist"></div>
+  </section>
+
+  <!-- Summary -->
+  <section class="summary" id="summary">
+    <h2>Podsumowanie sesji</h2>
+    <div class="bigscore" id="smScore">—</div>
+    <div class="verdictline" id="smVerdict"></div>
+    <div class="chbreak" id="smBreak"></div>
+    <div class="smActions">
+      <button class="btn primary" id="smRestart">Zacznij od nowa</button>
+      <button class="btn" id="smWrong">Powtórz tylko błędne</button>
+      <button class="btn ghost" id="smClose">Wróć do pytań</button>
+    </div>
+  </section>
+  </div><!-- /tabQuiz -->
+
+  <!-- ZAKŁADKA: PODCAST -->
+  <section id="tabPodcast" class="hidden">
+    <div class="pod-hero">
+      <span class="pod-eyebrow">Audio · kurs ISTQB CTFL v4.0</span>
+      <h2 class="pod-title">Posłuchaj całego sylabusa</h2>
+      <p class="pod-sub">Sześć rozdziałów omówionych po polsku — konkretnie i po kolei. Wybierz rozdział i słuchaj: w tle, w drodze, gdziekolwiek. Postęp zapisuje się automatycznie.</p>
+    </div>
+    <div class="pod-player">
+      <audio id="podAudio" controls preload="none"></audio>
+      <div class="pod-now" id="podNow">Wybierz rozdział, aby rozpocząć.</div>
+    </div>
+    <div class="pod-list" id="podList"></div>
+    <div class="pod-foot">
+      <a class="btn" id="podDownload" download>⤓ Pobierz cały kurs (jeden plik, 143 min)</a>
+      <span class="pod-note">Materiał edukacyjny opracowany na podstawie sylabusa &copy; ISTQB&reg;.</span>
+    </div>
+  </section>
+
+  <!-- ZAKŁADKA: FISZKI -->
+  <section id="tabCards" class="hidden">
+    <div class="cardstats">
+      <div class="stat"><div class="v ok" id="fcStatKnown">0 / 0</div><div class="k">Umiem</div></div>
+      <div class="stat"><div class="v" id="fcStatLeft">0</div><div class="k">Do powtórki</div></div>
+      <div class="stat"><div class="v acc" id="fcStatPct">0%</div><div class="k">Opanowanie</div></div>
+    </div>
+    <div class="controls">
+      <div class="field">
+        <label for="fcChapter">Rozdział sylabusa</label>
+        <select id="fcChapter"></select>
+      </div>
+      <div class="spacer"></div>
+      <label class="toggle"><input type="checkbox" id="fcOnlyRepeat"> Tylko do powtórki</label>
+      <label class="toggle"><input type="checkbox" id="fcShuffle"> Losowa kolejność</label>
+      <button class="btn ghost" id="fcReset" title="Wyczyść oznaczenia">↺ Reset</button>
+    </div>
+
+    <div class="flashwrap">
+      <div class="flashcard" id="flash">
+        <div class="fc-top"><span class="fc-cat" id="fcCat"></span><span class="fc-known" id="fcKnown"></span></div>
+        <div class="fc-body">
+          <div class="fc-front" id="fcFront"></div>
+          <div class="fc-en" id="fcEn"></div>
+          <div class="fc-back" id="fcBack"></div>
+          <div class="fc-hint" id="fcHint">Kliknij kartę (lub spacja), aby zobaczyć definicję</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flashnav">
+      <button class="btn" id="fcPrev">← Poprzednia</button>
+      <span class="counter" id="fcCounter">0 / 0</span>
+      <span class="spacer"></span>
+      <button class="btn repeat" id="fcRepeat">↻ Powtórz</button>
+      <button class="btn know" id="fcKnow">✓ Umiem</button>
+      <button class="btn" id="fcNext">Następna →</button>
+    </div>
+    <div class="cardfoot">Skróty: <kbd>spacja</kbd>/<kbd>Enter</kbd> = odsłoń · <kbd>→</kbd>/<kbd>←</kbd> = nawigacja · <kbd>U</kbd> = umiem · <kbd>P</kbd> = powtórz. <b>110 fiszek</b> obejmujących terminy i koncepcje z całego sylabusa ISTQB CTFL v4.0 (rozdziały 1–6).</div>
+  </section>
+
+  <div class="foot">
+    <p><b>Źródło:</b> ISTQB® Certified Tester Foundation Level — <i>Sample Exam, zestaw A (v1.0) i zestaw B (v1.0)</i>:
+    łącznie <b>106 oficjalnych pytań</b> (A: 40 egzaminacyjnych + 26 dodatkowych; B: 40), zgodne z sylabusem v4.0.
+    Razem pokrywają <b>100% celów nauczania (LO)</b> sylabusa. Pytania i uzasadnienia przetłumaczone na polski;
+    każde zachowuje odniesienie do LO i poziomu poznawczego (K). © International Software Testing Qualifications Board.
+    Materiał do użytku edukacyjnego.</p>
+    <p><b>Tryb Nauka:</b> błędnie odpowiedziane pytania wracają częściej; każde pytanie trzeba zaliczyć
+    <b>2× z rzędu</b>, aby uznać je za „opanowane”. Pętla trwa, aż opanujesz 100% wybranego materiału.
+    Zielony znacznik = pytanie oficjalne ISTQB.</p>
+    <p><b>Zakładka Egzaminy:</b> pełny egzamin próbny na czas - <b>40 pytań</b>, próg zaliczenia <b>26/40 (65%)</b>,
+    bez kar za zgadywanie. Do wyboru: oficjalny egzamin A, oficjalny egzamin B, losowy 40 z puli oficjalnej
+    (rozkład rozdziałów jak na prawdziwym egzaminie: 8/6/4/11/9/2) oraz egzamin treningowy z pytań nieoficjalnych.
+    Zegar startuje po kliknięciu „Rozpocznij” i odlicza czas (60 min, lub 75 min = +25% dla zdających w języku obcym);
+    po upływie czasu egzamin kończy się automatycznie. Wskaźnik tempa pokazuje, czy wyrabiasz się czasowo.
+    Na końcu wynik, rozbicie na rozdziały, przegląd odpowiedzi z uzasadnieniami i statystyki podejść.
+    Niedokończony egzamin można wznowić - czas liczy się dalej.</p>
+    <p><b>Skróty klawiszowe:</b> <kbd>1</kbd>–<kbd>5</kbd> lub <kbd>A</kbd>–<kbd>E</kbd> = wybór odpowiedzi ·
+    <kbd>Enter</kbd> / <kbd>→</kbd> = następne · <kbd>←</kbd> = poprzednie. Postęp zapisuje się automatycznie w przeglądarce.</p>
+    <p style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+      Autor: <a href="https://www.linkedin.com/in/kasprzakkamil/" target="_blank" rel="noopener">Kamil Kasprzak</a>
+    </p>
+    <p style="font-size:11.5px;color:var(--muted2)">
+      &copy; 2026 Kamil Kasprzak. Wszelkie prawa zastrzeżone. Kod aplikacji oraz dobór i opracowanie materiałów
+      są chronione prawem autorskim - kopiowanie, rozpowszechnianie lub wykorzystanie (w całości lub części)
+      bez pisemnej zgody autora jest zabronione. Oficjalne pytania egzaminacyjne pozostają własnością
+      &copy; International Software Testing Qualifications Board (ISTQB&reg;) i wykorzystywane są w celach edukacyjnych.
+    </p>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   DANE — oficjalny ISTQB CTFL v4.0 Sample Exam (zestaw A)
+   Pola: n=kolejność, id, ch=rozdział(1-6), lo, k, sel=ile zaznaczyć,
+   scenario(HTML, opc.), q, opts[[litera,tekst]], correct[], exp{}
+   exp._  = uzasadnienie ogólne (dla pytań typu i-v / dopasowań)
+   ============================================================ */
+const CH_NAMES = {
+  1:"1. Podstawy testowania",
+  2:"2. Testowanie w cyklu życia oprogramowania",
+  3:"3. Testowanie statyczne",
+  4:"4. Analiza i projektowanie testów",
+  5:"5. Zarządzanie działaniami testowymi",
+  6:"6. Narzędzia wspomagające testowanie"
+};
+
+// Diagram przejść stanów do pytania #23 (odtworzony z klucza odpowiedzi)
+const SVG23 = `<svg viewBox="0 0 640 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram przejść stanów">
+<defs><marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+<path d="M0,0 L7,3 L0,6 z" fill="#97a1b2"/></marker></defs>
+<style>
+.st{fill:#1e222c;stroke:#374055;stroke-width:1.5}
+.lb{fill:#e7ebf2;font:600 13px sans-serif;text-anchor:middle}
+.ed{stroke:#97a1b2;stroke-width:1.5;fill:none;marker-end:url(#ah)}
+.el{fill:#9fb6e8;font:italic 12px sans-serif;text-anchor:middle}
+.fin{fill:none;stroke:#374055;stroke-width:1.5}
+</style>
+<!-- start marker -->
+<circle cx="22" cy="160" r="6" fill="#97a1b2"/>
+<path class="ed" d="M28,160 L66,160"/>
+<!-- states -->
+<rect class="st" x="70" y="138" width="86" height="44" rx="10"/><text class="lb" x="113" y="165">INIT</text>
+<rect class="st" x="250" y="40" width="96" height="44" rx="10"/><text class="lb" x="298" y="67">TEST</text>
+<rect class="st" x="248" y="220" width="110" height="44" rx="10"/><text class="lb" x="303" y="247">RUNNING</text>
+<rect class="st" x="452" y="220" width="100" height="44" rx="10"/><text class="lb" x="502" y="247">PAUSED</text>
+<rect class="st" x="500" y="40" width="86" height="44" rx="10"/><text class="lb" x="543" y="65">OFF</text>
+<circle class="fin" cx="543" cy="62" r="26"/>
+<!-- edges -->
+<path class="ed" d="M150,142 C190,110 215,86 248,68"/><text class="el" x="188" y="98">test</text>
+<path class="ed" d="M156,170 C190,200 215,218 246,232"/><text class="el" x="186" y="214">run</text>
+<path class="ed" d="M346,62 L498,62"/><text class="el" x="422" y="52">done</text>
+<path class="ed" d="M300,220 L300,86"/><text class="el" x="322" y="150">error</text>
+<path class="ed" d="M358,236 C405,230 420,230 450,235"/><text class="el" x="405" y="223">pause</text>
+<path class="ed" d="M452,252 C420,266 390,266 358,255"/><text class="el" x="405" y="282">resume</text>
+<path class="ed" d="M540,220 C535,170 540,120 543,90"/><text class="el" x="566" y="155">done</text>
+</svg>`;
+
+// Diagram przejść stanów do pytania #23 z zestawu B (system magazynowy, maks. 3 elementy)
+const SVG_B23 = `<svg viewBox="0 0 620 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram przejść stanów magazynu">
+<defs><marker id="ahb" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+<path d="M0,0 L7,3 L0,6 z" fill="#97a1b2"/></marker></defs>
+<style>
+.bst{fill:#1e222c;stroke:#374055;stroke-width:1.5}
+.blb{fill:#e7ebf2;font:600 13px sans-serif;text-anchor:middle}
+.bed{stroke:#97a1b2;stroke-width:1.5;fill:none;marker-end:url(#ahb)}
+.bel{fill:#9fb6e8;font:italic 12px sans-serif;text-anchor:middle}
+</style>
+<circle cx="26" cy="150" r="6" fill="#97a1b2"/>
+<path class="bed" d="M32,150 L106,150"/>
+<rect class="bst" x="110" y="121" width="150" height="58" rx="11"/><text class="blb" x="185" y="155">NOT FULL</text>
+<rect class="bst" x="430" y="121" width="120" height="58" rx="11"/><text class="blb" x="490" y="155">FULL</text>
+<path class="bed" d="M150,121 C150,78 222,78 222,118"/><text class="bel" x="186" y="70">Add [N&lt;2]</text>
+<path class="bed" d="M150,179 C150,222 222,222 222,182"/><text class="bel" x="186" y="238">Remove [N&gt;0]</text>
+<path class="bed" d="M260,139 C330,110 362,110 430,138"/><text class="bel" x="345" y="108">Add [N=2]</text>
+<path class="bed" d="M430,162 C362,191 330,191 260,162"/><text class="bel" x="345" y="200">Remove</text>
+</svg>`;
+
+const QUESTIONS = [
+/* ---------- ROZDZIAŁ 1 ---------- */
+{n:1,id:"1",ch:1,lo:"FL-1.1.1",k:"K1",sel:1,
+ q:"Które z poniższych stwierdzeń opisuje prawidłowy cel testów?",
+ opts:[["a","Udowodnienie, że w testowanym systemie nie ma już żadnych nienaprawionych defektów"],
+   ["b","Udowodnienie, że po wdrożeniu systemu na produkcję nie wystąpią żadne awarie"],
+   ["c","Obniżenie poziomu ryzyka przedmiotu testów oraz budowanie zaufania do poziomu jakości"],
+   ["d","Zweryfikowanie, że nie pozostały żadne nieprzetestowane kombinacje danych wejściowych"]],
+ correct:["c"],
+ exp:{a:"Niepoprawna. Nie da się udowodnić, że w systemie nie ma już defektów (zasada testowania nr 1).",
+   b:"Niepoprawna. Patrz zasada testowania nr 7 (błędne przekonanie o braku błędów).",
+   c:"Poprawna. Testowanie wykrywa defekty i awarie, co obniża poziom ryzyka, a zarazem zwiększa zaufanie do poziomu jakości przedmiotu testów.",
+   d:"Niepoprawna. Przetestowanie wszystkich kombinacji danych wejściowych jest niewykonalne (zasada testowania nr 2)."}},
+
+{n:2,id:"2",ch:1,lo:"FL-1.2.1",k:"K2",sel:1,
+ q:"Który z poniższych przykładów przedstawia czynności testowe przyczyniające się do sukcesu?",
+ opts:[["a","Zaangażowanie testerów w różne czynności cyklu życia oprogramowania (SDLC) pomoże wykrywać defekty w produktach pracy"],
+   ["b","Testerzy starają się nie przeszkadzać programistom podczas kodowania, aby pisali oni lepszy kod"],
+   ["c","Współpraca testerów z użytkownikami końcowymi pomaga poprawić jakość raportów o defektach podczas testowania integracji komponentów i testowania systemowego"],
+   ["d","Certyfikowani testerzy zaprojektują znacznie lepsze przypadki testowe niż testerzy bez certyfikatu"]],
+ correct:["a"],
+ exp:{a:"Poprawna. Ważne jest, aby testerzy byli zaangażowani od początku cyklu życia (SDLC). Zwiększa to zrozumienie decyzji projektowych i pozwala wcześnie wykrywać defekty.",
+   b:"Niepoprawna. Zarówno programiści, jak i testerzy zyskują, gdy lepiej rozumieją nawzajem swoje produkty pracy oraz sposób testowania kodu.",
+   c:"Niepoprawna. To bliska współpraca testerów z projektantami systemu daje wgląd w to, jak testować.",
+   d:"Niepoprawna. Sam certyfikat nie przesądza o sukcesie; testowanie nie powiedzie się np. wtedy, gdy nie sprawdzi się zgodności z wymaganiami prawnymi."}},
+
+{n:3,id:"3",ch:1,lo:"FL-1.3.1",k:"K2",sel:1,
+ q:"Zostałeś przydzielony jako tester do zespołu tworzącego przyrostowo nowy system. Zauważyłeś, że od kilku iteracji nie wprowadzono żadnych zmian w istniejących przypadkach testów regresji i nie wykryto żadnych nowych defektów regresji. Twój menedżer jest zadowolony, ale Ty nie. Która zasada testowania wyjaśnia Twój sceptycyzm?",
+ opts:[["a","Testy się zużywają (paradoks pestycydów)"],
+   ["b","Błędne przekonanie o braku błędów"],
+   ["c","Defekty występują w skupiskach"],
+   ["d","Testowanie pełne jest niewykonalne"]],
+ correct:["a"],
+ exp:{a:"Poprawna. Zgodnie z tą zasadą, jeśli te same testy są powtarzane wielokrotnie, w końcu przestają wykrywać nowe defekty. To prawdopodobnie dlatego testy przechodzą również w tym wydaniu.",
+   b:"Niepoprawna. Ta zasada mówi o błędnym przekonaniu, że samo znalezienie i naprawienie wielu defektów zapewni sukces systemu.",
+   c:"Niepoprawna. Ta zasada mówi, że niewielka liczba modułów zwykle zawiera większość defektów.",
+   d:"Niepoprawna. Ta zasada mówi, że przetestowanie wszystkich kombinacji danych wejściowych i warunków początkowych jest niewykonalne."}},
+
+{n:4,id:"4",ch:1,lo:"FL-1.4.1",k:"K2",sel:1,
+ scenario:"<p>Pracujesz w zespole tworzącym aplikację mobilną do zamawiania jedzenia. W bieżącej iteracji zespół zdecydował się zaimplementować funkcję płatności.</p>",
+ q:"Która z poniższych czynności jest częścią analizy testów?",
+ opts:[["a","Oszacowanie, że testowanie integracji z usługą płatności zajmie 8 osobodni"],
+   ["b","Zdecydowanie, że zespół powinien sprawdzić, czy można poprawnie podzielić płatność między wielu użytkowników"],
+   ["c","Użycie analizy wartości brzegowych (BVA) do wyprowadzenia danych testowych dla przypadków sprawdzających poprawne przetwarzanie płatności dla minimalnej dozwolonej kwoty"],
+   ["d","Analiza rozbieżności między wynikiem faktycznym a oczekiwanym po wykonaniu przypadku testowego sprawdzającego płatność kartą i zaraportowanie defektu"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. Szacowanie pracochłonności testów jest częścią planowania testów.",
+   b:"Poprawna. To przykład definiowania warunków testowych, które jest częścią analizy testów.",
+   c:"Niepoprawna. Użycie technik testowania do wyprowadzenia elementów pokrycia jest częścią projektowania testów.",
+   d:"Niepoprawna. Raportowanie defektów wykrytych w testowaniu dynamicznym jest częścią wykonywania testów."}},
+
+{n:5,id:"5",ch:1,lo:"FL-1.4.2",k:"K2",sel:1,
+ scenario:"<p>Które z poniższych czynników (i–v) mają ZNACZĄCY wpływ na proces testowy?</p><ul><li>i. Cykl życia oprogramowania (SDLC)</li><li>ii. Liczba defektów wykrytych w poprzednich projektach</li><li>iii. Zidentyfikowane ryzyka produktowe</li><li>iv. Nowe wymagania regulacyjne</li><li>v. Liczba certyfikowanych testerów w organizacji</li></ul>",
+ q:"Wskaż prawidłowe przyporządkowanie:",
+ opts:[["a","i, ii mają znaczący wpływ; iii, iv, v nie mają"],
+   ["b","i, iii, iv mają znaczący wpływ; ii, v nie mają"],
+   ["c","ii, iv, v mają znaczący wpływ; i, iii nie mają"],
+   ["d","iii, v mają znaczący wpływ; i, ii, iv nie mają"]],
+ correct:["b"],
+ exp:{_:"i. Prawda — SDLC wpływa na proces testowy.\nii. Fałsz — liczba defektów z poprzednich projektów może mieć pewien wpływ, ale nie tak znaczący jak i, iii, iv.\niii. Prawda — zidentyfikowane ryzyka produktowe to jeden z najważniejszych czynników wpływających na proces testowy.\niv. Prawda — wymagania regulacyjne są istotnym czynnikiem.\nv. Fałsz — liczba certyfikowanych testerów nie ma znaczącego wpływu na proces testowy.\nStąd poprawna jest odpowiedź b.",
+   a:"Niepoprawna.",b:"Poprawna — znaczący wpływ mają i, iii, iv.",c:"Niepoprawna.",d:"Niepoprawna."}},
+
+{n:6,id:"6",ch:1,lo:"FL-1.4.5",k:"K2",sel:2,
+ q:"Które DWA z poniższych zadań należą GŁÓWNIE do roli testera?",
+ opts:[["a","Konfigurowanie środowisk testowych"],
+   ["b","Utrzymywanie rejestru produktu (product backlog)"],
+   ["c","Projektowanie rozwiązań dla nowych wymagań"],
+   ["d","Tworzenie planu testów"],
+   ["e","Raportowanie osiągniętego pokrycia"]],
+ correct:["a","e"],
+ exp:{a:"Poprawna. To zadanie wykonują testerzy.",
+   b:"Niepoprawna. Rejestr produktu buduje i utrzymuje właściciel produktu (product owner).",
+   c:"Niepoprawna. To zadanie zespołu deweloperskiego.",
+   d:"Niepoprawna. To rola kierownicza (zarządzanie testami).",
+   e:"Poprawna. To zadanie wykonują testerzy."}},
+
+{n:7,id:"7",ch:1,lo:"FL-1.5.1",k:"K2",sel:1,
+ scenario:"<p>Które z poniższych umiejętności (i–v) są NAJWAŻNIEJSZYMI umiejętnościami testera?</p><ul><li>i. Posiadanie wiedzy dziedzinowej</li><li>ii. Tworzenie wizji produktu</li><li>iii. Bycie dobrym członkiem zespołu</li><li>iv. Planowanie i organizowanie pracy zespołu</li><li>v. Krytyczne myślenie</li></ul>",
+ q:"Wskaż prawidłowe przyporządkowanie:",
+ opts:[["a","ii i iv są ważne; i, iii i v nie są"],
+   ["b","i, iii i v są ważne; ii i iv nie są"],
+   ["c","i, ii i v są ważne; iii i iv nie są"],
+   ["d","iii i iv są ważne; i, ii i v nie są"]],
+ correct:["b"],
+ exp:{_:"i. Prawda — wiedza dziedzinowa to ważna umiejętność testera.\nii. Fałsz — tworzenie wizji produktu to zadanie analityka biznesowego i przedstawiciela biznesu.\niii. Prawda — bycie dobrym członkiem zespołu jest ważne.\niv. Fałsz — planowanie i organizowanie pracy zespołu to zadanie kierownika testów lub (w projektach zwinnych) całego zespołu, a nie samego testera.\nv. Prawda — krytyczne myślenie to jedna z najważniejszych umiejętności testera.\nStąd poprawna jest odpowiedź b.",
+   a:"Niepoprawna.",b:"Poprawna — ważne są i, iii, v.",c:"Niepoprawna.",d:"Niepoprawna."}},
+
+{n:8,id:"8",ch:1,lo:"FL-1.5.2",k:"K1",sel:1,
+ q:"W jaki sposób podejście całego zespołu (whole team approach) przejawia się w interakcjach między testerami a przedstawicielami biznesu?",
+ opts:[["a","Przedstawiciele biznesu decydują o podejściu do automatyzacji testów"],
+   ["b","Testerzy pomagają przedstawicielom biznesu zdefiniować strategię testów"],
+   ["c","Przedstawiciele biznesu nie są częścią podejścia całego zespołu"],
+   ["d","Testerzy pomagają przedstawicielom biznesu tworzyć odpowiednie testy akceptacyjne"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. Podejście do automatyzacji definiują testerzy przy pomocy programistów i przedstawicieli biznesu.",
+   b:"Niepoprawna. Strategia testów jest ustalana we współpracy z programistami.",
+   c:"Niepoprawna. Testerzy, programiści i przedstawiciele biznesu są częścią podejścia całego zespołu.",
+   d:"Poprawna. Testerzy współpracują ściśle z przedstawicielami biznesu, aby osiągnąć pożądany poziom jakości — m.in. pomagając im tworzyć odpowiednie testy akceptacyjne."}},
+
+/* ---------- ROZDZIAŁ 2 ---------- */
+{n:9,id:"9",ch:2,lo:"FL-2.1.2",k:"K1",sel:1,
+ q:"Rozważ zasadę: „dla każdej czynności SDLC istnieje odpowiadająca jej czynność testowa”. W których modelach SDLC ta zasada obowiązuje?",
+ opts:[["a","Tylko w sekwencyjnych modelach SDLC"],
+   ["b","Tylko w iteracyjnych modelach SDLC"],
+   ["c","Tylko w iteracyjnych i przyrostowych modelach SDLC"],
+   ["d","W sekwencyjnych, przyrostowych i iteracyjnych modelach SDLC"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna.",b:"Niepoprawna.",c:"Niepoprawna.",
+   d:"Poprawna. Ta zasada obowiązuje we wszystkich modelach SDLC."}},
+
+{n:10,id:"10",ch:2,lo:"FL-2.1.3",k:"K1",sel:1,
+ q:"Które z poniższych stwierdzeń NAJLEPIEJ opisuje podejście wytwarzania sterowanego testami akceptacyjnymi (ATDD)?",
+ opts:[["a","W ATDD kryteria akceptacji są zazwyczaj tworzone w formacie given/when/then"],
+   ["b","W ATDD przypadki testowe są tworzone głównie na poziomie testów komponentów i są zorientowane na kod"],
+   ["c","W ATDD testy są tworzone na podstawie kryteriów akceptacji i sterują wytwarzaniem powiązanego oprogramowania"],
+   ["d","W ATDD testy są oparte na pożądanym zachowaniu oprogramowania, co ułatwia ich zrozumienie członkom zespołu"]],
+ correct:["c"],
+ exp:{a:"Niepoprawna. Format given/when/then jest częściej używany w BDD.",
+   b:"Niepoprawna. To opis wytwarzania sterowanego testami (TDD).",
+   c:"Poprawna. W ATDD testy są pisane na podstawie kryteriów akceptacji jako część procesu projektowania i sterują wytwarzaniem oprogramowania.",
+   d:"Niepoprawna. To cecha BDD."}},
+
+{n:11,id:"11",ch:2,lo:"FL-2.1.5",k:"K2",sel:1,
+ q:"Które z poniższych NIE jest przykładem podejścia „przesunięcia w lewo” (shift left)?",
+ opts:[["a","Przegląd wymagań użytkownika zanim zostaną formalnie zaakceptowane przez interesariuszy"],
+   ["b","Napisanie testu komponentu zanim powstanie odpowiadający mu kod"],
+   ["c","Wykonanie testu wydajnościowego komponentu podczas testowania komponentów"],
+   ["d","Napisanie skryptu testowego zanim ustanowiony zostanie proces zarządzania konfiguracją"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. Wczesny przegląd to przykład shift left.",
+   b:"Niepoprawna. TDD to przykład shift left.",
+   c:"Niepoprawna. Wczesne testowanie niefunkcjonalne to przykład shift left.",
+   d:"Poprawna. Skrypty testowe powinny podlegać zarządzaniu konfiguracją, więc tworzenie ich przed ustanowieniem tego procesu nie ma sensu — to nie jest przykład shift left."}},
+
+{n:12,id:"12",ch:2,lo:"FL-2.1.6",k:"K2",sel:1,
+ q:"Którego z poniższych argumentów użyłbyś, aby przekonać menedżera do organizowania retrospektyw na koniec każdego cyklu wydawniczego?",
+ opts:[["a","Retrospektywy są obecnie bardzo popularne i klienci doceniliby ich dodanie do naszych procesów"],
+   ["b","Organizowanie retrospektyw zaoszczędzi pieniądze, ponieważ przedstawiciele użytkowników nie dają natychmiastowej informacji zwrotnej o produkcie"],
+   ["c","Słabości procesu zidentyfikowane podczas retrospektywy mogą zostać przeanalizowane i posłużyć jako lista zadań w programie ciągłego doskonalenia procesu w organizacji"],
+   ["d","Retrospektywy obejmują pięć wartości, w tym odwagę i szacunek, kluczowych dla ciągłego doskonalenia"]],
+ correct:["c"],
+ exp:{a:"Niepoprawna. Retrospektywy służą głównie identyfikowaniu możliwości doskonalenia, a dla klientów mają niewielkie znaczenie.",
+   b:"Niepoprawna. Przedstawiciele biznesu nie dają informacji zwrotnej o samym produkcie, więc nie ma tu korzyści finansowej.",
+   c:"Poprawna. Regularnie prowadzone retrospektywy, po których następują odpowiednie działania, są kluczowe dla ciągłego doskonalenia wytwarzania i testowania.",
+   d:"Niepoprawna. Odwaga i szacunek to wartości Programowania Ekstremalnego (XP), niezwiązane bezpośrednio z retrospektywami."}},
+
+{n:13,id:"13",ch:2,lo:"FL-2.2.1",k:"K2",sel:1,
+ scenario:"<p>Które rodzaje awarii (1–4) najlepiej pasują do których poziomów testów (A–D)?</p><ul><li>1. Awarie zachowania systemu odbiegające od potrzeb biznesowych użytkownika</li><li>2. Awarie w komunikacji między komponentami</li><li>3. Awarie logiki w module</li><li>4. Niepoprawnie zaimplementowane reguły biznesowe</li></ul><ul><li>A. Testowanie komponentów</li><li>B. Testowanie integracji komponentów</li><li>C. Testowanie systemowe</li><li>D. Testowanie akceptacyjne</li></ul>",
+ q:"Wskaż prawidłowe dopasowanie:",
+ opts:[["a","1D, 2B, 3A, 4C"],["b","1D, 2B, 3C, 4A"],["c","1B, 2A, 3D, 4C"],["d","1C, 2B, 3A, 4D"]],
+ correct:["a"],
+ exp:{_:"Podstawą testów akceptacyjnych są potrzeby biznesowe użytkownika (1D).\nKomunikacja między komponentami jest testowana podczas testowania integracji komponentów (2B).\nAwarie logiki wykrywa się podczas testowania komponentów (3A).\nReguły biznesowe są podstawą testów systemowych (4C).\nStąd poprawna jest odpowiedź a.",
+   a:"Poprawna — 1D, 2B, 3A, 4C.",b:"Niepoprawna.",c:"Niepoprawna.",d:"Niepoprawna."}},
+
+{n:14,id:"14",ch:2,lo:"FL-2.2.3",k:"K2",sel:1,
+ scenario:"<p>Testujesz historyjkę użytkownika z trzema kryteriami akceptacji: AC1, AC2, AC3. AC1 pokrywa TC1, AC2 — TC2, AC3 — TC3. Historia wykonania obejmuje trzy przebiegi na trzech kolejnych wersjach oprogramowania:</p><table><tr><th></th><th>Wykonanie 1</th><th>Wykonanie 2</th><th>Wykonanie 3</th></tr><tr><th>TC1</th><td>(1) Niezaliczony</td><td>(4) Zaliczony</td><td>(7) Zaliczony</td></tr><tr><th>TC2</th><td>(2) Zaliczony</td><td>(5) Niezaliczony</td><td>(8) Zaliczony</td></tr><tr><th>TC3</th><td>(3) Niezaliczony</td><td>(6) Niezaliczony</td><td>(9) Zaliczony</td></tr></table><p class='note'>Testy powtarzane są po informacji, że wszystkie defekty wykryte w danym przebiegu naprawiono i dostępna jest nowa wersja oprogramowania.</p>",
+ q:"Które z powyższych testów są wykonywane jako testy regresji?",
+ opts:[["a","Tylko 4, 7, 8, 9"],["b","Tylko 5, 7"],["c","Tylko 4, 6, 8, 9"],["d","Tylko 5, 6"]],
+ correct:["b"],
+ exp:{_:"TC1 i TC3 nie przeszły w Wykonaniu 1 (testy (1) i (3)), więc testy (4) i (6) to testy potwierdzające.\nTC2 i TC3 nie przeszły w Wykonaniu 2 (testy (5) i (6)), więc testy (8) i (9) to także testy potwierdzające.\nTC2 przeszedł w Wykonaniu 1 (test (2)), więc test (5) to test regresji.\nTC1 przeszedł w Wykonaniu 2 (test (4)), więc test (7) to także test regresji.\nStąd poprawna jest odpowiedź b (5, 7).",
+   a:"Niepoprawna.",b:"Poprawna — testy 5 i 7.",c:"Niepoprawna.",d:"Niepoprawna."}},
+
+/* ---------- ROZDZIAŁ 3 ---------- */
+{n:15,id:"15",ch:3,lo:"FL-3.1.2",k:"K2",sel:1,
+ q:"Które z poniższych NIE jest korzyścią z testowania statycznego?",
+ opts:[["a","Tańsze zarządzanie defektami dzięki łatwości wykrywania defektów później w cyklu życia (SDLC)"],
+   ["b","Naprawa defektów wykrytych podczas testowania statycznego jest zwykle znacznie tańsza niż naprawa defektów wykrytych w testowaniu dynamicznym"],
+   ["c","Wykrycie defektów w kodzie, których mogłoby nie wykryć samo testowanie dynamiczne"],
+   ["d","Wykrycie luk i niespójności w wymaganiach"]],
+ correct:["a"],
+ exp:{a:"Poprawna. Zarządzanie defektami NIE jest tańsze — wykrywanie i naprawa defektów później w SDLC jest droższe. To stwierdzenie nie opisuje korzyści (jest błędne).",
+   b:"Niepoprawna. To rzeczywista korzyść z testowania statycznego.",
+   c:"Niepoprawna. To rzeczywista korzyść z testowania statycznego.",
+   d:"Niepoprawna. To rzeczywista korzyść z testowania statycznego."}},
+
+{n:16,id:"16",ch:3,lo:"FL-3.2.1",k:"K1",sel:1,
+ q:"Które z poniższych jest korzyścią z wczesnej i częstej informacji zwrotnej?",
+ opts:[["a","Usprawnia proces testowy w przyszłych projektach"],
+   ["b","Zmusza klientów do priorytetyzacji wymagań na podstawie uzgodnionych ryzyk"],
+   ["c","Jest jedynym sposobem pomiaru jakości zmian"],
+   ["d","Pomaga uniknąć nieporozumień dotyczących wymagań"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. Informacja zwrotna może usprawnić proces testowy, ale do poprawy przyszłych projektów nie musi być wczesna ani częsta.",
+   b:"Niepoprawna. Informacja zwrotna nie służy priorytetyzacji wymagań.",
+   c:"Niepoprawna. Jakość zmian można mierzyć na wiele sposobów.",
+   d:"Poprawna. Wczesna i częsta informacja zwrotna pozwala wcześnie zakomunikować potencjalne problemy z jakością."}},
+
+{n:17,id:"17",ch:3,lo:"FL-3.2.4",k:"K2",sel:1,
+ scenario:"<p>Przeglądy stosowane w Twojej organizacji mają następujące cechy:</p><ul><li>występuje rola protokolanta (scribe)</li><li>głównym celem jest ocena jakości</li><li>spotkanie prowadzi autor produktu pracy</li><li>występuje indywidualne przygotowanie</li><li>powstaje raport z przeglądu</li></ul>",
+ q:"Który typ przeglądu jest NAJPRAWDOPODOBNIEJ stosowany?",
+ opts:[["a","Przegląd nieformalny"],["b","Przejrzenie (walkthrough)"],["c","Przegląd techniczny"],["d","Inspekcja"]],
+ correct:["b"],
+ exp:{_:"• Rola protokolanta — występuje w przejrzeniach, przeglądach technicznych i inspekcjach, więc to nie przegląd nieformalny.\n• Cel: ocena jakości — to jeden z najważniejszych celów przejrzenia.\n• Spotkanie prowadzi autor — niedozwolone w inspekcji i zwykle niestosowane w przeglądzie technicznym; w przejrzeniu prowadzącym może być autor.\n• Indywidualne przygotowanie — występuje we wszystkich typach przeglądów.\n• Raport z przeglądu — może powstać w każdym typie.\nStąd poprawna jest odpowiedź b (przejrzenie).",
+   a:"Niepoprawna.",b:"Poprawna — przejrzenie (walkthrough).",c:"Niepoprawna.",d:"Niepoprawna."}},
+
+{n:18,id:"18",ch:3,lo:"FL-3.2.5",k:"K1",sel:1,
+ q:"Które z poniższych stwierdzeń NIE jest czynnikiem sprzyjającym udanym przeglądom?",
+ opts:[["a","Uczestnicy powinni przeznaczyć odpowiednią ilość czasu na przegląd"],
+   ["b","Dzielenie dużych produktów pracy na małe części, aby zmniejszyć intensywność wymaganego wysiłku"],
+   ["c","Uczestnicy powinni unikać zachowań wskazujących na znudzenie, irytację lub wrogość wobec innych"],
+   ["d","Znalezione awarie powinny być uznane, docenione i obsłużone obiektywnie"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. Odpowiedni czas to czynnik sprzyjający sukcesowi.",
+   b:"Niepoprawna. Dzielenie produktów pracy na małe części to czynnik sprzyjający.",
+   c:"Niepoprawna. Unikanie zachowań świadczących o znudzeniu czy wrogości to czynnik sprzyjający.",
+   d:"Poprawna. Podczas przeglądów wykrywa się defekty, a nie awarie — to stwierdzenie jest błędne."}},
+
+/* ---------- ROZDZIAŁ 4 ---------- */
+{n:19,id:"19",ch:4,lo:"FL-4.1.1",k:"K2",sel:1,
+ q:"Która z poniższych jest cechą technik testowania opartych na doświadczeniu?",
+ opts:[["a","Przypadki testowe są tworzone na podstawie szczegółowych informacji projektowych"],
+   ["b","Elementy testowane w sekcji kodu interfejsu służą do pomiaru pokrycia"],
+   ["c","Techniki silnie opierają się na wiedzy testera o oprogramowaniu i dziedzinie biznesowej"],
+   ["d","Przypadki testowe służą do identyfikowania odchyleń od wymagań"]],
+ correct:["c"],
+ exp:{a:"Niepoprawna. To cecha technik białoskrzynkowych (opartych na strukturze).",
+   b:"Niepoprawna. To cecha technik białoskrzynkowych — pokrycie mierzy się na podstawie elementów badanej struktury.",
+   c:"Poprawna. To cecha technik opartych na doświadczeniu: korzystają z wiedzy i doświadczenia testera (oczekiwane użycie, środowisko, prawdopodobne defekty i ich rozkład).",
+   d:"Niepoprawna. To cecha technik czarnoskrzynkowych — wykrywanie odchyleń od wymagań."}},
+
+{n:20,id:"20",ch:4,lo:"FL-4.2.1",k:"K3",sel:1,
+ scenario:"<p>Testujesz uproszczony formularz wyszukiwania mieszkań z dwoma kryteriami:</p><ul><li>piętro (3 opcje: parter; pierwsze piętro; drugie lub wyższe)</li><li>typ ogrodu (3 opcje: brak ogrodu; mały ogród; duży ogród)</li></ul><p>Tylko mieszkania na parterze mogą mieć ogród. Formularz ma wbudowany mechanizm walidacji, który nie pozwala użyć kryteriów łamiących tę regułę.</p><p>Każdy test ma dwie wartości wejściowe: piętro i typ ogrodu. Chcesz zastosować podział na klasy równoważności (EP), aby pokryć każde piętro i każdy typ ogrodu.</p>",
+ q:"Jaka jest minimalna liczba przypadków testowych dla osiągnięcia 100% pokrycia EP?",
+ opts:[["a","3"],["b","4"],["c","5"],["d","6"]],
+ correct:["b"],
+ exp:{_:"„Mały ogród” i „duży ogród” mogą wystąpić tylko z „parterem”, więc potrzeba dwóch przypadków z „parterem”, które pokrywają te dwie klasy typu ogrodu.\nPotrzeba dwóch kolejnych przypadków, aby pokryć dwie pozostałe klasy piętra oraz pozostałą klasę „brak ogrodu”.\nŁącznie cztery przypadki testowe:\nTC1 (parter, mały ogród)\nTC2 (parter, duży ogród)\nTC3 (pierwsze piętro, brak ogrodu)\nTC4 (drugie lub wyższe, brak ogrodu).",
+   a:"Niepoprawna.",b:"Poprawna — 4 przypadki testowe.",c:"Niepoprawna.",d:"Niepoprawna."}},
+
+{n:21,id:"21",ch:4,lo:"FL-4.2.2",k:"K3",sel:1,
+ scenario:"<p>Testujesz system wyliczający ocenę końcową z kursu na podstawie wyniku końcowego:</p><ul><li>0–50 pkt: niezaliczony</li><li>51–60: dostateczny</li><li>61–70: dość dobry</li><li>71–80: dobry</li><li>81–90: bardzo dobry</li><li>91–100: celujący</li></ul><table><tr><th></th><th>Wynik</th><th>Ocena</th></tr><tr><th>TC1</th><td>91</td><td>celujący</td></tr><tr><th>TC2</th><td>50</td><td>niezaliczony</td></tr><tr><th>TC3</th><td>81</td><td>bardzo dobry</td></tr><tr><th>TC4</th><td>60</td><td>dostateczny</td></tr><tr><th>TC5</th><td>70</td><td>dość dobry</td></tr><tr><th>TC6</th><td>80</td><td>dobry</td></tr></table>",
+ q:"Jakie pokrycie 2-punktową analizą wartości brzegowych (BVA) dla wyniku końcowego osiągają istniejące przypadki testowe?",
+ opts:[["a","50%"],["b","60%"],["c","33,3%"],["d","100%"]],
+ correct:["a"],
+ exp:{_:"Wartości brzegowe wyniku to: 0, 50, 51, 60, 61, 70, 71, 80, 81, 90, 91, 100 — łącznie 12.\nPrzypadki testowe pokrywają sześć z nich (TC1–91, TC2–50, TC3–81, TC4–60, TC5–70 oraz wartość 51).\nZatem pokrycie wynosi 6/12 = 50%.",
+   a:"Poprawna — 50%.",b:"Niepoprawna.",c:"Niepoprawna.",d:"Niepoprawna."}},
+
+{n:22,id:"22",ch:4,lo:"FL-4.2.3",k:"K3",sel:1,
+ scenario:"<p>Wypożyczalnia rowerów wprowadziła system CRM. Zaimplementowane funkcje:</p><ul><li>każdy może wypożyczyć rower, ale członkowie dostają 20% zniżki</li><li>jeśli przekroczono termin zwrotu, zniżka przepada</li><li>po 15 wypożyczeniach członek dostaje prezent: koszulkę</li></ul><table><tr><th>Warunki</th><th>R1</th><th>R2</th><th>R3</th><th>R4</th><th>R5</th><th>R6</th><th>R7</th><th>R8</th></tr><tr><th>Członek</th><td>T</td><td>T</td><td>T</td><td>T</td><td>F</td><td>F</td><td>F</td><td>F</td></tr><tr><th>Przekroczony termin</th><td>T</td><td>F</td><td>T</td><td>F</td><td>T</td><td>F</td><td>F</td><td>T</td></tr><tr><th>15. wypożyczenie</th><td>F</td><td>F</td><td>T</td><td>T</td><td>F</td><td>F</td><td>T</td><td>T</td></tr><tr><th>20% zniżki</th><td></td><td>X</td><td></td><td>X</td><td></td><td></td><td></td><td></td></tr><tr><th>Prezent (koszulka)</th><td></td><td></td><td>X</td><td>X</td><td></td><td></td><td></td><td>X</td></tr></table>",
+ q:"Bazując WYŁĄCZNIE na opisie funkcji systemu CRM, która z reguł opisuje sytuację niemożliwą?",
+ opts:[["a","R4"],["b","R2"],["c","R6"],["d","R8"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. Członek bez przekroczonego terminu może dostać zniżkę i koszulkę po 15 wypożyczeniach.",
+   b:"Niepoprawna. Członek bez przekroczonego terminu może dostać zniżkę, ale bez koszulki, dopóki nie osiągnie 15 wypożyczeń.",
+   c:"Niepoprawna. Osoba niebędąca członkiem nie dostaje zniżki, nawet jeśli nie przekroczyła terminu.",
+   d:"Poprawna. Brak zniżki (niebędący członkiem z przekroczonym terminem) — ale koszulkę mogą otrzymać tylko członkowie. Reguła R8 daje koszulkę osobie niebędącej członkiem, więc opisuje sytuację niemożliwą."}},
+
+{n:23,id:"23",ch:4,lo:"FL-4.2.4",k:"K3",sel:1,
+ scenario:"<p>Testujesz system, którego cykl życia modeluje poniższy diagram przejść stanów. System zaczyna w stanie INIT i kończy działanie w stanie OFF.</p><div class='diagram'>"+SVG23+"</div>",
+ q:"Jaka jest MINIMALNA liczba przypadków testowych dla osiągnięcia pokrycia prawidłowych przejść?",
+ opts:[["a","4"],["b","2"],["c","7"],["d","3"]],
+ correct:["d"],
+ exp:{_:"Przejścia „test” i „error” nie mogą wystąpić w jednym przypadku testowym. Tak samo oba przejścia „done”.\nDlatego do pokrycia wszystkich prawidłowych przejść potrzeba co najmniej trzech przypadków, np.:\nTC1: test, done\nTC2: run, error, done\nTC3: run, pause, resume, pause, done\nStąd poprawna jest odpowiedź d (3).",
+   a:"Niepoprawna.",b:"Niepoprawna.",c:"Niepoprawna.",d:"Poprawna — 3 przypadki testowe."}},
+
+{n:24,id:"24",ch:4,lo:"FL-4.3.1",k:"K2",sel:1,
+ q:"Twój zestaw testów osiągnął 100% pokrycia instrukcji. Jaka jest tego konsekwencja?",
+ opts:[["a","Każda instrukcja w kodzie, która zawiera defekt, została wykonana co najmniej raz"],
+   ["b","Każdy zestaw testów z większą liczbą przypadków niż Twój także osiągnie 100% pokrycia instrukcji"],
+   ["c","Każda ścieżka w kodzie została wykonana co najmniej raz"],
+   ["d","Każda kombinacja wartości wejściowych została przetestowana co najmniej raz"]],
+ correct:["a"],
+ exp:{a:"Poprawna. Skoro osiągnięto 100% pokrycia instrukcji, każda instrukcja — w tym te z defektami — została wykonana i oceniona co najmniej raz.",
+   b:"Niepoprawna. Pokrycie zależy od tego, co jest testowane, a nie od liczby przypadków. Np. dla „if (x==0) y=1” jeden przypadek (x=0) daje 100% pokrycia instrukcji, a dwa (x=1) i (x=2) tylko 50%.",
+   c:"Niepoprawna. Przy pętli liczba ścieżek może być nieskończona, więc nie da się wykonać wszystkich ścieżek.",
+   d:"Niepoprawna. Testowanie pełne jest niewykonalne. Np. „input x; print x” — dowolny pojedynczy test daje 100% pokrycia instrukcji, pokrywając tylko jedną wartość wejściową."}},
+
+{n:25,id:"25",ch:4,lo:"FL-4.3.3",k:"K2",sel:1,
+ q:"Które z poniższych NIE jest prawdą o testowaniu białoskrzynkowym?",
+ opts:[["a","Podczas testowania białoskrzynkowego brana jest pod uwagę cała implementacja oprogramowania"],
+   ["b","Miary pokrycia białoskrzynkowego mogą pomóc zidentyfikować dodatkowe testy zwiększające pokrycie kodu"],
+   ["c","Techniki białoskrzynkowe mogą być stosowane w testowaniu statycznym"],
+   ["d","Testowanie białoskrzynkowe może pomóc zidentyfikować luki w implementacji wymagań"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna (zdanie prawdziwe). Siłą technik białoskrzynkowych jest uwzględnienie całej implementacji.",
+   b:"Niepoprawna (zdanie prawdziwe). Miary pokrycia są obiektywne i pozwalają generować dodatkowe testy.",
+   c:"Niepoprawna (zdanie prawdziwe). Techniki białoskrzynkowe mogą być używane w przeglądach (testowanie statyczne).",
+   d:"Poprawna (to zdanie jest nieprawdziwe). To słabość technik białoskrzynkowych — nie wykryją brakującej implementacji, bo opierają się wyłącznie na strukturze przedmiotu testów, a nie na specyfikacji wymagań."}},
+
+{n:26,id:"26",ch:4,lo:"FL-4.4.1",k:"K2",sel:1,
+ q:"Które z poniższych NAJLEPIEJ opisuje ideę zgadywania błędów (error guessing)?",
+ opts:[["a","Zgadywanie błędów polega na wykorzystaniu wiedzy i doświadczenia o defektach wykrytych w przeszłości oraz typowych pomyłkach programistów"],
+   ["b","Zgadywanie błędów polega na wykorzystaniu osobistego doświadczenia z programowania i pomyłek, które popełniłeś jako programista"],
+   ["c","Zgadywanie błędów wymaga wyobrażenia sobie, że jesteś użytkownikiem przedmiotu testów, i zgadywania pomyłek, jakie użytkownik mógłby popełnić"],
+   ["d","Zgadywanie błędów wymaga szybkiego zduplikowania zadania programistycznego, aby zidentyfikować rodzaj pomyłek programisty"]],
+ correct:["a"],
+ exp:{a:"Poprawna. Idea polega na tym, że tester próbuje przewidzieć pomyłki programisty i możliwe defekty na podstawie wcześniejszego doświadczenia (czasem list kontrolnych).",
+   b:"Niepoprawna. Choć tester będący wcześniej programistą może korzystać z osobistego doświadczenia, technika nie opiera się na uprzedniej wiedzy programistycznej.",
+   c:"Niepoprawna. Zgadywanie błędów nie jest techniką użyteczności do przewidywania, jak użytkownik może błędnie korzystać z systemu.",
+   d:"Niepoprawna. Duplikowanie zadania programistycznego jest niepraktyczne i nie jest zgadywaniem błędów."}},
+
+{n:27,id:"27",ch:4,lo:"FL-4.4.2",k:"K2",sel:1,
+ scenario:"<p>W projekcie opóźniono wydanie zupełnie nowej aplikacji, a wykonywanie testów rozpoczęło się późno. Masz jednak bardzo szczegółową wiedzę dziedzinową i dobre zdolności analityczne. Pełna lista wymagań nie została jeszcze udostępniona zespołowi, ale kierownictwo prosi o przedstawienie pewnych wyników testów.</p>",
+ q:"Która technika testowania pasuje tu NAJLEPIEJ?",
+ opts:[["a","Testowanie oparte na liście kontrolnej"],["b","Zgadywanie błędów"],["c","Testowanie eksploracyjne"],["d","Testowanie gałęzi"]],
+ correct:["c"],
+ exp:{a:"Niepoprawna. To nowy produkt — prawdopodobnie nie masz jeszcze listy kontrolnej, a warunki testowe mogą być nieznane z powodu braku wymagań.",
+   b:"Niepoprawna. To nowy produkt — prawdopodobnie brak wystarczających informacji, by poprawnie zgadywać błędy.",
+   c:"Poprawna. Testowanie eksploracyjne jest najbardziej użyteczne, gdy jest mało znanych specyfikacji lub presja czasu.",
+   d:"Niepoprawna. Testowanie gałęzi jest czasochłonne, a kierownictwo prosi o wyniki teraz; nie wykorzystuje też wiedzy dziedzinowej."}},
+
+{n:28,id:"28",ch:4,lo:"FL-4.5.2",k:"K2",sel:1,
+ q:"Które z poniższych NAJLEPIEJ opisuje sposób dokumentowania kryteriów akceptacji?",
+ opts:[["a","Przeprowadzanie retrospektyw w celu ustalenia rzeczywistych potrzeb interesariuszy dotyczących danej historyjki użytkownika"],
+   ["b","Użycie formatu given/when/then do opisania przykładowego warunku testowego związanego z daną historyjką"],
+   ["c","Użycie komunikacji ustnej, aby zmniejszyć ryzyko niezrozumienia kryteriów akceptacji przez innych"],
+   ["d","Dokumentowanie ryzyk związanych z daną historyjką w planie testów, aby ułatwić testowanie oparte na ryzyku"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. Retrospektywy służą zbieraniu wniosków i usprawnianiu procesu, a nie dokumentowaniu kryteriów akceptacji.",
+   b:"Poprawna. To standardowy sposób dokumentowania kryteriów akceptacji.",
+   c:"Niepoprawna. Komunikacja ustna nie pozwala fizycznie udokumentować kryteriów jako części historyjki (aspekt „card” w modelu 3C).",
+   d:"Niepoprawna. Kryteria akceptacji są związane z historyjką, nie z planem testów; to warunki uznania historyjki za ukończoną, a ryzyka nimi nie są."}},
+
+{n:29,id:"29",ch:4,lo:"FL-4.5.3",k:"K3",sel:1,
+ scenario:"<p>Rozważ historyjkę użytkownika:</p><p><i>Jako Redaktor<br>chcę przeglądać treść przed jej publikacją,<br>aby zapewnić poprawność gramatyczną.</i></p><p>Kryteria akceptacji:</p><ul><li>użytkownik może zalogować się do CMS z rolą „Redaktor”</li><li>redaktor może przeglądać istniejące strony treści</li><li>redaktor może edytować treść strony</li><li>redaktor może dodawać komentarze (markup)</li><li>redaktor może zapisać zmiany</li><li>redaktor może przekazać rolę „właściciela treści” do wprowadzenia aktualizacji</li></ul>",
+ q:"Które z poniższych jest NAJLEPSZYM przykładem testu ATDD dla tej historyjki?",
+ opts:[["a","sprawdź, czy redaktor może zapisać dokument po usunięciu treści strony"],
+   ["b","sprawdź, czy właściciel treści może się zalogować i wprowadzić aktualizacje"],
+   ["c","sprawdź, czy redaktor może zaplanować edytowaną treść do publikacji"],
+   ["d","sprawdź, czy redaktor może przekazać innemu redaktorowi wprowadzenie aktualizacji"]],
+ correct:["a"],
+ exp:{a:"Poprawna. Ten test pokrywa dwa kryteria akceptacji: edycję treści oraz zapis zmian.",
+   b:"Niepoprawna. Kryteria akceptacji dotyczą czynności redaktora, a nie właściciela treści.",
+   c:"Niepoprawna. Planowanie publikacji nie jest objęte kryteriami akceptacji.",
+   d:"Niepoprawna. Kryteria mówią o przekazaniu roli właścicielowi treści, a nie innemu redaktorowi."}},
+
+/* ---------- ROZDZIAŁ 5 ---------- */
+{n:30,id:"30",ch:5,lo:"FL-5.1.2",k:"K1",sel:1,
+ q:"W jaki sposób testerzy wnoszą wartość do planowania iteracji i wydań?",
+ opts:[["a","Testerzy ustalają priorytety historyjek użytkownika do wytworzenia"],
+   ["b","Testerzy skupiają się wyłącznie na funkcjonalnych aspektach systemu"],
+   ["c","Testerzy uczestniczą w szczegółowej identyfikacji i ocenie ryzyk historyjek użytkownika"],
+   ["d","Testerzy gwarantują wydanie wysokiej jakości oprogramowania dzięki wczesnemu projektowaniu testów podczas planowania wydania"]],
+ correct:["c"],
+ exp:{a:"Niepoprawna. Priorytety historyjek ustala przedstawiciel biznesu wraz z zespołem deweloperskim.",
+   b:"Niepoprawna. Testerzy skupiają się zarówno na aspektach funkcjonalnych, jak i niefunkcjonalnych.",
+   c:"Poprawna. Zgodnie z sylabusem to jeden ze sposobów, w jaki testerzy wnoszą wartość do planowania iteracji i wydań.",
+   d:"Niepoprawna. Wczesne projektowanie testów nie jest częścią planowania wydania i nie gwarantuje automatycznie wysokiej jakości."}},
+
+{n:31,id:"31",ch:5,lo:"FL-5.1.3",k:"K2",sel:2,
+ q:"Które DWA z poniższych są kryteriami wyjścia dla testowania systemu?",
+ opts:[["a","Gotowość środowiska testowego"],
+   ["b","Możliwość zalogowania się testera do przedmiotu testów"],
+   ["c","Osiągnięto szacowaną gęstość defektów"],
+   ["d","Wymagania przetłumaczono na format given/when/then"],
+   ["e","Testy regresji są zautomatyzowane"]],
+ correct:["c","e"],
+ exp:{a:"Niepoprawna. Gotowość środowiska to kryterium dostępności zasobów — należy do kryteriów wejścia.",
+   b:"Niepoprawna. To kryterium dostępności zasobów — należy do kryteriów wejścia.",
+   c:"Poprawna. Szacowana gęstość defektów to miara staranności — należy do kryteriów wyjścia.",
+   d:"Niepoprawna. Przetłumaczenie wymagań na testowalny format to kryterium wejścia.",
+   e:"Poprawna. Automatyzacja testów regresji to kryterium ukończenia — należy do kryteriów wyjścia."}},
+
+{n:32,id:"32",ch:5,lo:"FL-5.1.4",k:"K3",sel:1,
+ scenario:"<p>Zespół używa estymacji trójpunktowej dla nowej, wysokoryzykownej funkcji. Oszacowania:</p><ul><li>najbardziej optymistyczne: 2 osobogodziny</li><li>najbardziej prawdopodobne: 11 osobogodzin</li><li>najbardziej pesymistyczne: 14 osobogodzin</li></ul>",
+ q:"Jaka jest ostateczna estymata?",
+ opts:[["a","9 osobogodzin"],["b","14 osobogodzin"],["c","11 osobogodzin"],["d","10 osobogodzin"]],
+ correct:["d"],
+ exp:{_:"W estymacji trójpunktowej: E = (optymistyczna + 4·najbardziej prawdopodobna + pesymistyczna) / 6.\nE = (2 + 4·11 + 14) / 6 = 60 / 6 = 10.\nStąd poprawna jest odpowiedź d.",
+   a:"Niepoprawna.",b:"Niepoprawna.",c:"Niepoprawna.",d:"Poprawna — 10 osobogodzin."}},
+
+{n:33,id:"33",ch:5,lo:"FL-5.1.5",k:"K3",sel:1,
+ scenario:"<p>Testujesz aplikację mobilną wyszukującą pobliską restaurację wg typu jedzenia. Lista przypadków testowych, priorytetów (mniejsza liczba = wyższy priorytet) i zależności:</p><table><tr><th>Nr</th><th>Pokryty warunek</th><th>Priorytet</th><th>Zależność</th></tr><tr><td>TC 001</td><td>Wybierz typ jedzenia</td><td>3</td><td>brak</td></tr><tr><td>TC 002</td><td>Wybierz restaurację</td><td>2</td><td>TC 001</td></tr><tr><td>TC 003</td><td>Uzyskaj wskazówki dojazdu</td><td>1</td><td>TC 002</td></tr><tr><td>TC 004</td><td>Zadzwoń do restauracji</td><td>2</td><td>TC 002</td></tr><tr><td>TC 005</td><td>Zarezerwuj stolik</td><td>3</td><td>TC 002</td></tr></table>",
+ q:"Który przypadek testowy powinien być wykonany jako trzeci?",
+ opts:[["a","TC 003"],["b","TC 005"],["c","TC 002"],["d","TC 001"]],
+ correct:["a"],
+ exp:{_:"Najpierw TC 001, potem TC 002 (zależności). Następnie TC 003 (najwyższy priorytet), później TC 004, a na końcu TC 005.\nTrzeci wykonywany jest więc TC 003.",
+   a:"Poprawna — TC 003.",b:"Niepoprawna.",c:"Niepoprawna.",d:"Niepoprawna."}},
+
+{n:34,id:"34",ch:5,lo:"FL-5.1.7",k:"K2",sel:1,
+ scenario:"<p>Rozważ kategorie testów (1–4) i kwadranty zwinnego testowania (A–D):</p><ul><li>1. Testowanie użyteczności</li><li>2. Testowanie komponentów</li><li>3. Testowanie funkcjonalne</li><li>4. Testowanie niezawodności</li></ul><ul><li>A. Kwadrant Q1: zorientowany na technologię, wspierający zespół</li><li>B. Kwadrant Q2: zorientowany na biznes, wspierający zespół</li><li>C. Kwadrant Q3: zorientowany na biznes, krytykujący produkt</li><li>D. Kwadrant Q4: zorientowany na technologię, krytykujący produkt</li></ul>",
+ q:"Jak kategorie testów mapują się na kwadranty zwinnego testowania?",
+ opts:[["a","1C, 2A, 3B, 4D"],["b","1D, 2A, 3C, 4B"],["c","1C, 2B, 3D, 4A"],["d","1D, 2B, 3C, 4A"]],
+ correct:["a"],
+ exp:{_:"Testowanie użyteczności — Q3 (1–C).\nTestowanie komponentów — Q1 (2–A).\nTestowanie funkcjonalne — Q2 (3–B).\nTestowanie niezawodności — Q4 (4–D).\nStąd poprawna jest odpowiedź a.",
+   a:"Poprawna — 1C, 2A, 3B, 4D.",b:"Niepoprawna.",c:"Niepoprawna.",d:"Niepoprawna."}},
+
+{n:35,id:"35",ch:5,lo:"FL-5.2.4",k:"K2",sel:1,
+ scenario:"<p>Podczas analizy ryzyka zidentyfikowano i oceniono ryzyko:</p><ul><li>Ryzyko: czas generowania raportu jest zbyt długi</li><li>Prawdopodobieństwo: średnie; wpływ: wysoki</li><li>Reakcja na ryzyko: niezależny zespół testowy wykonuje testy wydajnościowe podczas testów systemowych; wybrana próbka użytkowników końcowych wykonuje testy alfa i beta przed wydaniem</li></ul>",
+ q:"Jaki środek zaproponowano w odpowiedzi na to analizowane ryzyko?",
+ opts:[["a","Akceptacja ryzyka"],["b","Plan awaryjny (contingency)"],["c","Łagodzenie ryzyka"],["d","Transfer ryzyka"]],
+ correct:["c"],
+ exp:{a:"Niepoprawna. Ryzyka nie akceptujemy — proponowane są konkretne działania.",
+   b:"Niepoprawna. Nie zaproponowano planu awaryjnego.",
+   c:"Poprawna. Proponowane działania są związane z testowaniem, które jest formą łagodzenia ryzyka.",
+   d:"Niepoprawna. Ryzyko nie jest przenoszone, lecz łagodzone."}},
+
+{n:36,id:"36",ch:5,lo:"FL-5.3.3",k:"K2",sel:1,
+ q:"Które narzędzie może być użyte przez zwinny zespół do pokazania ilości pracy wykonanej oraz pozostałej do wykonania w danej iteracji?",
+ opts:[["a","Kryteria akceptacji"],["b","Raport o defekcie"],["c","Raport z ukończenia testów"],["d","Wykres spalania (burndown chart)"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. Kryteria akceptacji to warunki uznania historyjki za gotową; nie pokazują postępu prac.",
+   b:"Niepoprawna. Raporty o defektach informują o defektach, nie o postępie prac.",
+   c:"Niepoprawna. Raport z ukończenia testów powstaje po zakończeniu iteracji, więc nie pokazuje postępu na bieżąco.",
+   d:"Poprawna. Wykres spalania graficznie przedstawia pracę pozostałą do wykonania względem czasu i jest aktualizowany codziennie, więc na bieżąco pokazuje postęp."}},
+
+{n:37,id:"37",ch:5,lo:"FL-5.4.1",k:"K2",sel:1,
+ q:"Musisz zaktualizować jeden ze zautomatyzowanych skryptów testowych zgodnie z nowym wymaganiem. Który proces wskazuje, że tworzysz nową wersję skryptu w repozytorium testów?",
+ opts:[["a","Zarządzanie identyfikowalnością (traceability)"],["b","Testowanie pielęgnacyjne"],["c","Zarządzanie konfiguracją"],["d","Inżynieria wymagań"]],
+ correct:["c"],
+ exp:{a:"Niepoprawna. Identyfikowalność to relacja między różnymi produktami pracy, a nie między wersjami tego samego produktu.",
+   b:"Niepoprawna. Testowanie pielęgnacyjne dotyczy testowania zmian; nie jest ściśle związane z wersjonowaniem.",
+   c:"Poprawna. W ramach wsparcia testowania zarządzanie konfiguracją obejmuje kontrolę wersji wszystkich elementów testowych.",
+   d:"Niepoprawna. Inżynieria wymagań to pozyskiwanie, dokumentowanie i zarządzanie wymaganiami; nie jest ściśle związana z wersjonowaniem skryptów."}},
+
+{n:38,id:"38",ch:5,lo:"FL-5.5.1",k:"K3",sel:1,
+ scenario:"<p>Otrzymałeś od programistów raport, że opisana w nim anomalia jest nieodtwarzalna:</p><div class='scenario' style='border-left-color:var(--warn);margin:0'><p><b>Aplikacja się zawiesza</b><br>2022-Maj-03 – John Doe – Odrzucony</p><p>Aplikacja zawiesza się po wpisaniu „Test input: $ä” w polu Nazwa na ekranie tworzenia użytkownika. Próba wylogowania, zalogowania kontem test_admin01 — ten sam problem. Inne konta administratora — ten sam problem. Brak komunikatu o błędzie; log (w załączniku) zawiera powiadomienie o błędzie krytycznym. Zgodnie z przypadkiem TC-1305 aplikacja powinna zaakceptować podane dane i utworzyć użytkownika. Proszę naprawić z wysokim priorytetem — funkcja związana z REQ-0012, krytycznym nowym wymaganiem biznesowym.</p></div>",
+ q:"Jakiej krytycznej informacji BRAKUJE w tym raporcie, która byłaby przydatna dla programistów?",
+ opts:[["a","Wynik oczekiwany i wynik faktyczny"],["b","Odniesienia i status defektu"],["c","Środowisko testowe i element testowy"],["d","Priorytet i severity (dotkliwość)"]],
+ correct:["c"],
+ exp:{a:"Niepoprawna. Wynik oczekiwany („aplikacja powinna zaakceptować dane i utworzyć użytkownika”) i faktyczny („aplikacja się zawiesza…”) są podane.",
+   b:"Niepoprawna. Jest odniesienie do przypadku i wymagania, podany jest też status (odrzucony) — a sam status i tak nie byłby tu pomocny.",
+   c:"Poprawna. Nie wiadomo, w którym środowisku testowym wystąpiła anomalia, ani jakiej aplikacji (i jej wersji) dotyczy.",
+   d:"Niepoprawna. Raport wskazuje pilność, globalny charakter problemu i wysoki wpływ na biznes."}},
+
+/* ---------- ROZDZIAŁ 6 ---------- */
+{n:39,id:"39",ch:6,lo:"FL-6.1.1",k:"K2",sel:1,
+ q:"Którą czynność testową wspiera narzędzie do przygotowywania danych testowych?",
+ opts:[["a","Monitorowanie i nadzór nad testami"],["b","Analiza i projektowanie testów"],["c","Implementacja i wykonywanie testów"],["d","Ukończenie testów"]],
+ correct:["c"],
+ exp:{a:"Niepoprawna. Monitorowanie i nadzór nie obejmują przygotowywania danych testowych.",
+   b:"Niepoprawna. Analiza i projektowanie obejmują identyfikację warunków i tworzenie przypadków testowych, a nie przygotowywanie danych testowych.",
+   c:"Poprawna. Implementacja testów obejmuje tworzenie lub pozyskiwanie elementów testowych niezbędnych do wykonania testów (np. danych testowych).",
+   d:"Niepoprawna. Ukończenie testów następuje na kamieniach milowych (wydanie, koniec iteracji) — to za późno na przygotowanie danych."}},
+
+{n:40,id:"40",ch:6,lo:"FL-6.2.1",k:"K1",sel:1,
+ q:"Który z poniższych elementów prawidłowo identyfikuje potencjalne ryzyko automatyzacji testów?",
+ opts:[["a","Może wprowadzić nieznane regresje na produkcji"],
+   ["b","Może nie zostać przydzielony wystarczający wysiłek na utrzymanie testaliów (testware)"],
+   ["c","Narzędzia testowe i powiązane testalia mogą nie być wystarczająco wiarygodne"],
+   ["d","Może skrócić czas przeznaczony na testowanie manualne"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. Automatyzacja testów nie wprowadza nieznanych regresji na produkcji.",
+   b:"Poprawna. Błędne przydzielenie wysiłku na utrzymanie testaliów to realne ryzyko automatyzacji.",
+   c:"Niepoprawna. Narzędzia należy dobrać tak, aby one i ich testalia były wiarygodne.",
+   d:"Niepoprawna. Głównym celem automatyzacji jest ograniczenie testowania manualnego — to korzyść, a nie ryzyko."}},
+
+/* ========== PYTANIA DODATKOWE (A1–A26) ========== */
+{n:41,id:"A1",ch:1,lo:"FL-1.1.2",k:"K2",sel:1,
+ scenario:"<p>Otrzymałeś zadanie przeanalizowania i naprawienia przyczyn awarii w nowym systemie przed jego wydaniem.</p>",
+ q:"Którą czynność wykonujesz?",
+ opts:[["a","Debugowanie"],["b","Testowanie oprogramowania"],["c","Pozyskiwanie wymagań"],["d","Zarządzanie defektami"]],
+ correct:["a"],
+ exp:{a:"Poprawna. Debugowanie to proces znajdowania, analizowania i usuwania przyczyn awarii w komponencie lub systemie.",
+   b:"Niepoprawna. Testowanie służy planowaniu, przygotowaniu i ocenie produktów pracy, by sprawdzić zgodność z wymaganiami i wykryć defekty — nie naprawia przyczyn awarii.",
+   c:"Niepoprawna. Pozyskiwanie wymagań to gromadzenie i konsolidacja wymagań — nie dotyczy naprawiania przyczyn awarii.",
+   d:"Niepoprawna. Zarządzanie defektami to rozpoznawanie, rejestrowanie, klasyfikowanie, badanie i usuwanie defektów — nie naprawianie przyczyn awarii."}},
+
+{n:42,id:"A2",ch:1,lo:"FL-1.2.2",k:"K1",sel:1,
+ scenario:"<p>W wielu organizacjach dział testów nazywany jest działem zapewniania jakości (QA).</p>",
+ q:"Czy to stwierdzenie jest poprawne i dlaczego?",
+ opts:[["a","Poprawne. Testowanie i QA oznaczają dokładnie to samo"],
+   ["b","Poprawne. Nazwy te są wymienne, bo testowanie i QA skupiają się na tych samych kwestiach jakościowych"],
+   ["c","Niepoprawne. Testowanie to coś więcej — obejmuje wszystkie działania związane z jakością, a QA skupia się na procesach jakościowych"],
+   ["d","Niepoprawne. QA skupia się na procesach związanych z jakością, a testowanie koncentruje się na wykazaniu przydatności komponentu lub systemu do celu i wykrywaniu defektów"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. Patrz uzasadnienie d.",b:"Niepoprawna. Patrz uzasadnienie d.",c:"Niepoprawna. Patrz uzasadnienie d.",
+   d:"Poprawna. Testowanie i QA to nie to samo. Testowanie to wszystkie czynności SDLC (statyczne i dynamiczne) służące ocenie produktów pracy pod kątem zgodności z wymaganiami i wykrywania defektów. QA skupia się na ustanawianiu, monitorowaniu, doskonaleniu i przestrzeganiu procesów związanych z jakością."}},
+
+{n:43,id:"A3",ch:1,lo:"FL-1.2.3",k:"K2",sel:1,
+ scenario:"<p>Dzwoniący telefon w sąsiednim boksie rozprasza programistę, przez co niepoprawnie programuje on logikę sprawdzającą górną granicę zmiennej wejściowej. Później, podczas testów systemowych, tester zauważa, że pole przyjmuje nieprawidłowe wartości.</p>",
+ q:"Co poprawnie opisuje niepoprawnie zakodowaną górną granicę?",
+ opts:[["a","Przyczyna źródłowa (root cause)"],["b","Awaria"],["c","Pomyłka (error)"],["d","Defekt"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. Przyczyną źródłową jest rozproszenie, którego doświadczył programista.",
+   b:"Niepoprawna. Przyjmowanie nieprawidłowych danych to awaria.",
+   c:"Niepoprawna. Pomyłką jest błędne rozumowanie, które doprowadziło do umieszczenia defektu w kodzie.",
+   d:"Poprawna. Problem w kodzie to defekt."}},
+
+{n:44,id:"A4",ch:1,lo:"FL-1.4.3",k:"K2",sel:1,
+ scenario:"<p>Rozważ następujące testalia (testware):</p><div class='scenario' style='margin:0'><p><b>Karta testów #04.018</b> — czas sesji: 1h<br>Eksploruj: stronę rejestracji<br>Za pomocą: różnych zestawów niepoprawnych danych wejściowych<br>Aby wykryć: defekty związane z akceptacją procesu rejestracji z niepoprawnymi danymi</p></div>",
+ q:"Która czynność testowa wytwarza te testalia jako produkt wyjściowy?",
+ opts:[["a","Planowanie testów"],["b","Monitorowanie i nadzór nad testami"],["c","Analiza testów"],["d","Projektowanie testów"]],
+ correct:["d"],
+ exp:{_:"Rozważane testalia to karta testów (test charter). Karty testów są produktem wyjściowym projektowania testów.\nStąd poprawna jest odpowiedź d.",
+   a:"Niepoprawna.",b:"Niepoprawna.",c:"Niepoprawna.",d:"Poprawna — projektowanie testów."}},
+
+{n:45,id:"A5",ch:1,lo:"FL-1.4.4",k:"K2",sel:1,
+ q:"Które z poniższych jest NAJLEPSZYM przykładem tego, jak identyfikowalność (traceability) wspiera testowanie?",
+ opts:[["a","Analiza wpływu zmiany dostarczy informacji o ukończeniu testów"],
+   ["b","Analiza identyfikowalności między przypadkami a wynikami testów dostarczy informacji o szacowanym poziomie ryzyka resztkowego"],
+   ["c","Analiza wpływu zmiany pomoże wybrać właściwe przypadki testowe do testów regresji"],
+   ["d","Analiza identyfikowalności między podstawą testów, przedmiotami testów i przypadkami testowymi pomoże wybrać dane testowe dla założonego pokrycia"]],
+ correct:["c"],
+ exp:{a:"Niepoprawna. Analiza wpływu nie daje informacji o kompletności testów — pomaga wybrać właściwe przypadki do wykonania.",
+   b:"Niepoprawna. Identyfikowalność nie daje informacji o ryzyku resztkowym, jeśli przypadki nie są powiązane z ryzykami.",
+   c:"Poprawna. Analiza wpływu zmian pomaga wybrać przypadki testowe do testów regresji.",
+   d:"Niepoprawna. Identyfikowalność nie służy doborowi danych testowych — to bardziej zadanie analizy i implementacji testów."}},
+
+{n:46,id:"A6",ch:1,lo:"FL-1.5.3",k:"K2",sel:1,
+ q:"Które z poniższych NAJLEPIEJ wyjaśnia korzyść z niezależności testowania?",
+ opts:[["a","Niezależny zespół testowy pozwala kierownictwu przypisać mu odpowiedzialność za jakość finalnego produktu"],
+   ["b","Zewnętrzny zespół testowy ma przewagę, bo nie ulega presji terminów dostawy ze strony kierownictwa projektu"],
+   ["c","Niezależny zespół może pracować w oddzieleniu od programistów, bez rozpraszania zmianami wymagań, ograniczając kontakt do zgłaszania defektów"],
+   ["d","Gdy specyfikacje zawierają niejednoznaczności i niespójności, przyjmuje się założenia interpretacyjne, a niezależny tester może kwestionować te założenia i interpretacje programisty"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. Za jakość odpowiada każdy uczestnik projektu, a nie wyłącznie zespół testowy.",
+   b:"Niepoprawna. Niedotrzymywanie terminów przez zewnętrzny zespół nie jest korzyścią i nie ma podstaw sądzić, że taki zespół ich nie dotrzymuje.",
+   c:"Niepoprawna. Praca w pełnej izolacji to zła praktyka; zewnętrzny zespół również powinien dbać o komunikację z programistami.",
+   d:"Poprawna. Specyfikacje nigdy nie są idealne, więc programista przyjmuje założenia. Niezależny tester jest cenny, bo może je kwestionować i weryfikować."}},
+
+{n:47,id:"A7",ch:2,lo:"FL-2.1.1",k:"K2",sel:1,
+ scenario:"<p>Pracujesz jako tester w zespole stosującym model V. Jak wybór tego modelu cyklu życia (SDLC) wpływa na moment rozpoczęcia testowania?</p>",
+ q:"Wskaż prawidłowe stwierdzenie:",
+ opts:[["a","Testowanie dynamiczne nie może być wykonane wcześnie w SDLC"],
+   ["b","Testowanie statyczne nie może być wykonane wcześnie w SDLC"],
+   ["c","Planowanie testów nie może być wykonane wcześnie w SDLC"],
+   ["d","Testowanie akceptacyjne może być wykonane wcześnie w SDLC"]],
+ correct:["a"],
+ exp:{a:"Poprawna. W modelach sekwencyjnych w początkowych fazach testerzy uczestniczą w przeglądach wymagań, analizie i projektowaniu testów. Kod wykonywalny powstaje później, więc testowanie dynamiczne nie może być wykonane wcześnie.",
+   b:"Niepoprawna. Testowanie statyczne zawsze może być wykonane wcześnie.",
+   c:"Niepoprawna. Planowanie testów powinno być wykonane wcześnie, przed rozpoczęciem projektu testowego.",
+   d:"Niepoprawna. Testowanie akceptacyjne wymaga działającego produktu, który w modelach sekwencyjnych powstaje późno."}},
+
+{n:48,id:"A8",ch:2,lo:"FL-2.1.4",k:"K2",sel:1,
+ scenario:"<p>Które z poniższych są zaletami DevOps?</p><ul><li>i. Szybsze wydania i szybszy czas wejścia na rynek</li><li>ii. Zwiększa potrzebę powtarzalnego testowania manualnego</li><li>iii. Stała dostępność wykonywalnego oprogramowania</li><li>iv. Redukcja liczby testów regresji związanych z refaktoryzacją kodu</li><li>v. Konfiguracja frameworka automatyzacji jest tania, bo wszystko jest zautomatyzowane</li></ul>",
+ q:"Wskaż prawidłowe przyporządkowanie:",
+ opts:[["a","i, ii, iv to zalety; iii, v nie"],
+   ["b","iii, v to zalety; i, ii, iv nie"],
+   ["c","i, iii to zalety; ii, iv, v nie"],
+   ["d","ii, iv, v to zalety; i, iii nie"]],
+ correct:["c"],
+ exp:{_:"i. Prawda — szybsze wydania i czas wejścia na rynek to zaleta DevOps.\nii. Fałsz — zwykle potrzeba mniej testów manualnych dzięki automatyzacji.\niii. Prawda — stała dostępność wykonywalnego oprogramowania to zaleta.\niv. Fałsz — potrzeba więcej testów regresji.\nv. Fałsz — nie wszystko jest zautomatyzowane, a konfiguracja frameworka automatyzacji jest kosztowna.\nStąd poprawna jest odpowiedź c.",
+   a:"Niepoprawna.",b:"Niepoprawna.",c:"Poprawna — zaletami są i, iii.",d:"Niepoprawna."}},
+
+{n:49,id:"A9",ch:2,lo:"FL-2.2.2",k:"K2",sel:1,
+ scenario:"<p>Klient przysłał listę wymagań do aplikacji mobilnej do zamawiania jedzenia. Jedno z nich, o wysokim priorytecie, brzmi: „Zamówienie musi być przetworzone w mniej niż 10 sekund w 95% przypadków”. Utworzyłeś zestaw przypadków, w których wykonano wiele losowych zamówień, zmierzono czas przetwarzania i sprawdzono wyniki względem wymagań.</p>",
+ q:"Jaki typ testów wykonałeś?",
+ opts:[["a","Funkcjonalny, bo przypadki pokrywają wymaganie biznesowe użytkownika"],
+   ["b","Niefunkcjonalny, bo mierzą wydajność systemu"],
+   ["c","Funkcjonalny, bo przypadki wchodzą w interakcję z interfejsem użytkownika"],
+   ["d","Strukturalny, bo trzeba znać wewnętrzną strukturę programu, by zmierzyć czas przetwarzania"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. To, że wymaganie pochodzi od klienta i jest ważne biznesowo, nie czyni tych testów funkcjonalnymi — sprawdzają one „jak” (jak szybko), a nie „co” system robi.",
+   b:"Poprawna. To przykład testowania wydajnościowego — typu testowania niefunkcjonalnego.",
+   c:"Niepoprawna. Nawet jeśli następuje interakcja z UI, głównym celem jest sprawdzenie wydajności, a nie użyteczności.",
+   d:"Niepoprawna. Do testów wydajnościowych nie trzeba znać wewnętrznej struktury kodu."}},
+
+{n:50,id:"A10",ch:2,lo:"FL-2.3.1",k:"K2",sel:1,
+ scenario:"<p>Strategia testów Twojej organizacji mówi, że gdy system ma zostać wycofany, należy przetestować migrację danych.</p>",
+ q:"W ramach jakiego typu testów najprawdopodobniej zostanie to wykonane?",
+ opts:[["a","Testowanie pielęgnacyjne"],["b","Testowanie regresji"],["c","Testowanie komponentów"],["d","Testowanie integracji"]],
+ correct:["a"],
+ exp:{a:"Poprawna. Wycofanie systemu może wymagać testowania migracji danych, co jest formą testowania pielęgnacyjnego.",
+   b:"Niepoprawna. Testowanie regresji sprawdza, czy poprawka nie wpłynęła na inne części kodu — tu chodzi o migrację danych.",
+   c:"Niepoprawna. Testowanie komponentów dotyczy pojedynczych komponentów, nie migracji danych.",
+   d:"Niepoprawna. Testowanie integracji dotyczy interakcji między komponentami/systemami, nie migracji danych."}},
+
+{n:51,id:"A11",ch:3,lo:"FL-3.1.1",k:"K1",sel:1,
+ scenario:"<p>Lista produktów pracy wytworzonych w SDLC:</p><ul><li>i. Wymagania biznesowe</li><li>ii. Harmonogram</li><li>iii. Budżet testów</li><li>iv. Wykonywalny kod firm trzecich</li><li>v. Historyjki użytkownika i ich kryteria akceptacji</li></ul>",
+ q:"Które z nich można poddać przeglądowi?",
+ opts:[["a","i i iv można; ii, iii i v nie"],
+   ["b","i, ii, iii i iv można; v nie"],
+   ["c","i, ii, iii i v można; iv nie"],
+   ["d","iii, iv, v można; i i ii nie"]],
+ correct:["c"],
+ exp:{_:"Przeglądowi nie można poddać jedynie wykonywalnego kodu firm trzecich (iv).\nWszystkie pozostałe produkty pracy (i, ii, iii, v) można przeglądać.\nStąd poprawna jest odpowiedź c.",
+   a:"Niepoprawna.",b:"Niepoprawna.",c:"Poprawna — i, ii, iii, v można przeglądać.",d:"Niepoprawna."}},
+
+{n:52,id:"A12",ch:3,lo:"FL-3.1.3",k:"K2",sel:1,
+ scenario:"<p>Zdecyduj, które stwierdzenia (i–v) są prawdziwe dla testowania dynamicznego, a które dla statycznego:</p><ul><li>i. Nieprawidłowe zachowania zewnętrzne łatwiej wykryć tym testowaniem</li><li>ii. Odstępstwa od standardu kodowania łatwiej znaleźć tym testowaniem</li><li>iii. Wykrywa awarie spowodowane defektami, gdy oprogramowanie jest uruchomione</li><li>iv. Jego celem jest wykrywanie defektów jak najwcześniej</li><li>v. Brakujące pokrycie krytycznych wymagań bezpieczeństwa łatwiej znaleźć i naprawić</li></ul>",
+ q:"Wskaż prawidłowe przyporządkowanie:",
+ opts:[["a","i, iv, v — statyczne; ii, iii — dynamiczne"],
+   ["b","i, iii, iv — statyczne; ii, v — dynamiczne"],
+   ["c","ii, iii — statyczne; i, iv, v — dynamiczne"],
+   ["d","ii, iv, v — statyczne; i, iii, iv — dynamiczne"]],
+ correct:["d"],
+ exp:{_:"i. Łatwo wykryć przy uruchomionym oprogramowaniu — testowanie dynamiczne.\nii. Odstępstwa od standardów — typowy defekt łatwiej wykrywany statycznie.\niii. Jeśli oprogramowanie jest wykonywane — testowanie dynamiczne.\niv. Wykrywanie defektów jak najwcześniej to cel zarówno testowania statycznego, jak i dynamicznego.\nv. Luki w pokryciu/identyfikowalności podstawy testów — typowy defekt łatwiej wykrywany statycznie.\nStąd poprawna jest odpowiedź d.",
+   a:"Niepoprawna.",b:"Niepoprawna.",c:"Niepoprawna.",d:"Poprawna."}},
+
+{n:53,id:"A13",ch:3,lo:"FL-3.2.2",k:"K2",sel:1,
+ q:"Które stwierdzenie o przeglądach formalnych jest PRAWDZIWE?",
+ opts:[["a","Niektóre przeglądy nie wymagają więcej niż jednej roli"],
+   ["b","Proces przeglądu składa się z kilku czynności"],
+   ["c","Dokumentacja do przeglądu nie jest rozdawana przed spotkaniem, z wyjątkiem niektórych typów przeglądów"],
+   ["d","Defekty znalezione podczas przeglądu nie są raportowane, bo nie pochodzą z testowania dynamicznego"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. We wszystkich typach przeglądów występuje więcej niż jedna rola, nawet w nieformalnych.",
+   b:"Poprawna. Proces przeglądu formalnego składa się z kilku czynności.",
+   c:"Niepoprawna. Dokumentację do przeglądu należy rozdawać jak najwcześniej.",
+   d:"Niepoprawna. Defekty znalezione podczas przeglądu powinny być raportowane."}},
+
+{n:54,id:"A14",ch:3,lo:"FL-3.2.3",k:"K1",sel:1,
+ q:"Jakie zadanie może przyjąć kierownictwo podczas przeglądu formalnego?",
+ opts:[["a","Przejęcie ogólnej odpowiedzialności za przegląd"],
+   ["b","Decydowanie, co ma zostać poddane przeglądowi"],
+   ["c","Zapewnienie efektywnego przebiegu spotkania i mediacja w razie potrzeby"],
+   ["d","Rejestrowanie informacji z przeglądu, np. decyzji"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. To zadanie lidera przeglądu (kierownika przeglądu).",
+   b:"Poprawna. To zadanie kierownictwa w przeglądzie formalnym.",
+   c:"Niepoprawna. To zadanie moderatora.",
+   d:"Niepoprawna. To zadanie protokolanta (scribe)."}},
+
+{n:55,id:"A15",ch:4,lo:"FL-4.2.2",k:"K3",sel:1,
+ scenario:"<p>System przechowywania wina mierzy temperaturę T (w °C, zaokrąglaną do całości) i alarmuje przy odchyleniu od optimum 12:</p><ul><li>jeśli T = 12 → „temperatura optymalna”</li><li>jeśli T < 12 → „temperatura zbyt niska!”</li><li>jeśli T > 12 → „temperatura zbyt wysoka!”</li></ul><p>Chcesz użyć 3-punktowej analizy wartości brzegowych (BVA). Wejściem testu jest temperatura w °C.</p>",
+ q:"Jaki jest MINIMALNY zbiór danych wejściowych dający 100% pożądanego pokrycia?",
+ opts:[["a","11, 12, 13"],["b","10, 12, 14"],["c","10, 11, 12, 13, 14"],["d","10, 11, 13, 14"]],
+ correct:["c"],
+ exp:{_:"Są trzy klasy równoważności: {…, 10, 11}, {12} oraz {13, 14, …}. Wartości brzegowe to 11, 12 i 13. W 3-punktowej BVA dla każdej granicy testujemy granicę i obu jej sąsiadów:\n• dla 11: 10, 11, 12\n• dla 12: 11, 12, 13\n• dla 13: 12, 13, 14\nŁącznie potrzeba: 10, 11, 12, 13, 14.",
+   a:"Niepoprawna.",b:"Niepoprawna.",c:"Poprawna — 10, 11, 12, 13, 14.",d:"Niepoprawna."}},
+
+{n:56,id:"A16",ch:4,lo:"FL-4.3.2",k:"K2",sel:1,
+ q:"Które stwierdzenie o testowaniu gałęzi (branch testing) jest POPRAWNE?",
+ opts:[["a","Jeśli program zawiera tylko gałęzie bezwarunkowe, 100% pokrycia gałęzi można osiągnąć bez wykonania żadnego przypadku testowego"],
+   ["b","Jeśli przypadki testowe pokrywają wszystkie gałęzie bezwarunkowe, osiągnięto 100% pokrycia gałęzi"],
+   ["c","Jeśli osiągnięto 100% pokrycia instrukcji, osiągnięto też 100% pokrycia gałęzi"],
+   ["d","Jeśli osiągnięto 100% pokrycia gałęzi, to wykonano wszystkie wyniki decyzji w każdej instrukcji decyzyjnej"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. Nadal potrzebny jest jeden przypadek testowy, bo jest co najmniej jedna (bezwarunkowa) gałąź do pokrycia.",
+   b:"Niepoprawna. Pokrycie samych gałęzi bezwarunkowych nie oznacza pokrycia gałęzi warunkowych.",
+   c:"Niepoprawna. To 100% pokrycia gałęzi implikuje 100% pokrycia instrukcji, nie odwrotnie. Np. IF bez ELSE: jeden test daje 100% pokrycia instrukcji, ale tylko 50% pokrycia gałęzi.",
+   d:"Poprawna. Każdy wynik decyzji odpowiada gałęzi warunkowej, więc 100% pokrycia gałęzi implikuje 100% pokrycia decyzji."}},
+
+{n:57,id:"A17",ch:4,lo:"FL-4.4.3",k:"K2",sel:1,
+ scenario:"<p>Testujesz aplikację mobilną do zarządzania kontami bankowymi. Wykonujesz zestaw testów oceniający każdy ekran i każde pole względem ogólnej listy najlepszych praktyk UI (zaczerpniętej z popularnej książki), maksymalizujących atrakcyjność, łatwość użycia i dostępność.</p>",
+ q:"Która opcja NAJLEPIEJ kategoryzuje używaną technikę testowania?",
+ opts:[["a","Czarnoskrzynkowa"],["b","Eksploracyjna"],["c","Oparta na liście kontrolnej"],["d","Zgadywanie błędów"]],
+ correct:["c"],
+ exp:{a:"Niepoprawna. Książka to ogólne wytyczne, a nie formalny dokument wymagań, specyfikacja ani zestaw przypadków/historyjek użytkownika.",
+   b:"Niepoprawna. Listę można uznać za zbiór warunków testowych do sprawdzenia, a nie za karty testów (testowanie eksploracyjne).",
+   c:"Poprawna. Lista najlepszych praktyk UI to lista warunków testowych do systematycznego sprawdzenia.",
+   d:"Niepoprawna. Testy nie skupiają się na możliwych awariach, lecz na wiedzy o tym, co ważne dla użytkownika (użyteczność)."}},
+
+{n:58,id:"A18",ch:4,lo:"FL-4.5.1",k:"K2",sel:1,
+ q:"Które z poniższych NAJLEPIEJ opisuje współpracujące (collaborative) podejście do pisania historyjek użytkownika?",
+ opts:[["a","Historyjki tworzą testerzy i programiści, a następnie akceptują je przedstawiciele biznesu"],
+   ["b","Historyjki tworzą wspólnie przedstawiciele biznesu, programiści i testerzy"],
+   ["c","Historyjki tworzą przedstawiciele biznesu, a weryfikują programiści i testerzy"],
+   ["d","Historyjki są tworzone tak, aby były niezależne, negocjowalne, wartościowe, estymowalne, małe i testowalne"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. We współpracującym podejściu wszyscy interesariusze tworzą historyjki wspólnie, by uzyskać wspólną wizję.",
+   b:"Poprawna. Współpracujące pisanie historyjek oznacza, że wszyscy interesariusze tworzą je wspólnie, dla wspólnej wizji.",
+   c:"Niepoprawna. To również nie opisuje wspólnego tworzenia przez wszystkich interesariuszy.",
+   d:"Niepoprawna. To lista właściwości dobrej historyjki (INVEST), a nie opis podejścia opartego na współpracy."}},
+
+{n:59,id:"A19",ch:5,lo:"FL-5.1.1",k:"K2",sel:1,
+ scenario:"<p>Fragment planu testów:</p><div class='scenario' style='margin:0'><p>Testowanie będzie wykonywane z użyciem testowania komponentów i testowania integracji komponentów. Regulacje wymagają wykazania 100% pokrycia gałęzi dla każdego komponentu sklasyfikowanego jako krytyczny.</p></div>",
+ q:"Do której części planu testów należy ten fragment?",
+ opts:[["a","Komunikacja"],["b","Rejestr ryzyk"],["c","Kontekst testowania"],["d","Podejście do testów"]],
+ correct:["d"],
+ exp:{_:"Fragment zawiera informacje o poziomach testów i kryteriach wyjścia, które są częścią podejścia do testów.\nStąd poprawna jest odpowiedź d.",
+   a:"Niepoprawna.",b:"Niepoprawna.",c:"Niepoprawna.",d:"Poprawna — podejście do testów."}},
+
+{n:60,id:"A20",ch:5,lo:"FL-5.1.4",k:"K3",sel:1,
+ scenario:"<p>Zespół używa pokera planistycznego. Obowiązuje zasada: jeśli brak czasu na pełne uzgodnienie, a rozrzut wyników jest mały, można zastosować regułę „przyjmij liczbę z największą liczbą głosów”. Po dwóch rundach nie osiągnięto konsensusu, więc rozpoczęto trzecią:</p><table><tr><th></th><th colspan='7'>Estymacje członków zespołu</th></tr><tr><th>Runda 1</th><td>21</td><td>2</td><td>5</td><td>34</td><td>13</td><td>8</td><td>2</td></tr><tr><th>Runda 2</th><td>13</td><td>8</td><td>8</td><td>34</td><td>13</td><td>8</td><td>5</td></tr><tr><th>Runda 3</th><td>13</td><td>8</td><td>13</td><td>13</td><td>13</td><td>13</td><td>8</td></tr></table>",
+ q:"Które z poniższych jest NAJLEPSZYM przykładem kolejnego kroku?",
+ opts:[["a","Właściciel produktu musi podjąć ostateczną decyzję"],
+   ["b","Przyjąć 13 jako ostateczną estymatę, bo ma najwięcej głosów"],
+   ["c","Nie trzeba nic robić — osiągnięto konsensus"],
+   ["d","Usunąć funkcję z wydania, bo nie osiągnięto konsensusu"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. To powinna być decyzja zespołu, a nie narzucona przez jedną osobę.",
+   b:"Poprawna. Gdy estymaty różnią się, ale rozrzut jest mały, można zastosować regułę „przyjmij liczbę z największą liczbą głosów” (tu 13).",
+   c:"Niepoprawna. Konsensusu jeszcze nie ma — część głosuje 13, część 8.",
+   d:"Niepoprawna. Funkcji nie usuwa się tylko dlatego, że zespół nie zgadza się co do estymaty."}},
+
+{n:61,id:"A21",ch:5,lo:"FL-5.1.6",k:"K1",sel:1,
+ q:"Które z poniższych NIE jest prawdą o piramidzie testów?",
+ opts:[["a","Piramida testów kładzie nacisk na większą liczbę testów na niższych poziomach testów"],
+   ["b","Im bliżej szczytu piramidy, tym bardziej formalna powinna być automatyzacja testów"],
+   ["c","Zwykle testowanie komponentów i integracji komponentów automatyzuje się narzędziami opartymi na API"],
+   ["d","Dla testów systemowych i akceptacyjnych testy automatyczne tworzy się zwykle narzędziami opartymi na GUI"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna (zdanie prawdziwe). Piramida kładzie nacisk na większą liczbę testów na niższych poziomach.",
+   b:"Poprawna (to zdanie jest nieprawdziwe). Nieprawdą jest, że bliżej szczytu automatyzacja powinna być bardziej formalna.",
+   c:"Niepoprawna (zdanie prawdziwe). Niższe poziomy zwykle automatyzuje się narzędziami opartymi na API.",
+   d:"Niepoprawna (zdanie prawdziwe). Wyższe poziomy zwykle automatyzuje się narzędziami opartymi na GUI."}},
+
+{n:62,id:"A22",ch:5,lo:"FL-5.2.1",k:"K1",sel:1,
+ scenario:"<p>Podczas analizy ryzyka zespół rozważył ryzyko: „System dopuszcza zbyt wysoki rabat dla klienta”. Wpływ oceniono jako bardzo wysoki.</p>",
+ q:"Co można powiedzieć o prawdopodobieństwie ryzyka?",
+ opts:[["a","Jest również bardzo wysokie. Wysoki wpływ zawsze implikuje wysokie prawdopodobieństwo"],
+   ["b","Jest bardzo niskie. Wysoki wpływ zawsze implikuje niskie prawdopodobieństwo"],
+   ["c","Nie można nic powiedzieć. Wpływ i prawdopodobieństwo ryzyka są niezależne"],
+   ["d","Prawdopodobieństwo nie jest istotne przy tak wysokim wpływie — nie trzeba go definiować"]],
+ correct:["c"],
+ exp:{a:"Niepoprawna. Wpływ i prawdopodobieństwo ryzyka są niezależne.",
+   b:"Niepoprawna. Wpływ i prawdopodobieństwo ryzyka są niezależne.",
+   c:"Poprawna. Wpływ i prawdopodobieństwo ryzyka są niezależne.",
+   d:"Niepoprawna. Do wyznaczenia poziomu ryzyka potrzebne są oba czynniki."}},
+
+{n:63,id:"A23",ch:5,lo:"FL-5.2.2",k:"K2",sel:1,
+ scenario:"<p>Zidentyfikowane ryzyka dla nowego produktu:</p><ul><li>i. Kierownictwo przenosi dwóch doświadczonych testerów do innego projektu</li><li>ii. System nie spełnia standardów bezpieczeństwa funkcjonalnego</li><li>iii. Czas odpowiedzi systemu przekracza wymagania użytkownika</li><li>iv. Interesariusze mają nietrafne oczekiwania</li><li>v. Osoby z niepełnosprawnościami mają problemy z korzystaniem z systemu</li></ul>",
+ q:"Które z nich są ryzykami projektowymi?",
+ opts:[["a","i, iv to ryzyka projektowe; ii, iii, v nie"],
+   ["b","iv, v to ryzyka projektowe; i, ii, iii nie"],
+   ["c","i, iii to ryzyka projektowe; ii, iv, v nie"],
+   ["d","ii, v to ryzyka projektowe; i, iii, iv nie"]],
+ correct:["a"],
+ exp:{_:"i. Ryzyko projektowe.\nii. Ryzyko produktowe.\niii. Ryzyko produktowe.\niv. Ryzyko projektowe.\nv. Ryzyko produktowe.\nStąd poprawna jest odpowiedź a (i, iv).",
+   a:"Poprawna — i, iv to ryzyka projektowe.",b:"Niepoprawna.",c:"Niepoprawna.",d:"Niepoprawna."}},
+
+{n:64,id:"A24",ch:5,lo:"FL-5.2.3",k:"K2",sel:1,
+ q:"Które z poniższych jest przykładem tego, jak analiza ryzyka produktowego wpływa na dokładność i zakres testowania?",
+ opts:[["a","Kierownik testów codziennie monitoruje i raportuje poziom wszystkich znanych ryzyk, by interesariusze mogli zdecydować o dacie wydania"],
+   ["b","Jednym z ryzyk był „brak wsparcia dla baz open source”, więc zespół zdecydował zintegrować system z bazą open source"],
+   ["c","Podczas ilościowej analizy ryzyka zespół oszacował łączny poziom wszystkich ryzyk i zaraportował go jako całkowite ryzyko resztkowe przed testowaniem"],
+   ["d","Ocena ryzyka wykazała bardzo wysoki poziom ryzyk wydajnościowych, więc zdecydowano wykonać szczegółowe testy wydajnościowe wcześnie w SDLC"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. To przykład monitorowania ryzyka, a nie analizy ryzyka.",
+   b:"Niepoprawna. To decyzja architektoniczna, niezwiązana z testowaniem.",
+   c:"Niepoprawna. To przykład ilościowej analizy ryzyka, niezwiązany z dokładnością ani zakresem testowania.",
+   d:"Poprawna. To pokazuje, jak analiza ryzyka wpływa na dokładność testowania (poziom szczegółowości)."}},
+
+{n:65,id:"A25",ch:5,lo:"FL-5.3.1",k:"K1",sel:2,
+ q:"Które DWIE z poniższych to typowe metryki raportowania poziomu jakości przedmiotu testów?",
+ opts:[["a","Liczba defektów wykrytych podczas testowania systemowego"],
+   ["b","Całkowity wysiłek projektowania testów podzielony przez liczbę zaprojektowanych przypadków"],
+   ["c","Liczba wykonanych procedur testowych"],
+   ["d","Liczba wykrytych defektów podzielona przez rozmiar produktu pracy"],
+   ["e","Czas potrzebny na naprawę defektu"]],
+ correct:["a","d"],
+ exp:{a:"Poprawna. Liczba wykrytych defektów jest związana z jakością przedmiotu testów.",
+   b:"Niepoprawna. To miara efektywności testów, a nie jakości przedmiotu testów.",
+   c:"Niepoprawna. Liczba wykonanych przypadków nic nie mówi o jakości (mogą to robić wyniki testów).",
+   d:"Poprawna. Gęstość defektów jest związana z jakością przedmiotu testów.",
+   e:"Niepoprawna. Czas naprawy to metryka procesu — nie mówi o jakości produktu."}},
+
+{n:66,id:"A26",ch:5,lo:"FL-5.3.2",k:"K2",sel:1,
+ q:"Która informacja w raporcie z postępu testów jest NAJMNIEJ użyteczna dla przedstawicieli biznesu?",
+ opts:[["a","Przeszkody w testowaniu"],["b","Osiągnięte pokrycie gałęzi"],["c","Postęp testów"],["d","Nowe ryzyka w cyklu testowym"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. Przeszkody w testowaniu mogą być wysokopoziomowe i biznesowe — to ważna informacja dla biznesu.",
+   b:"Poprawna. Pokrycie gałęzi to metryka techniczna używana przez programistów i testerów technicznych — dla przedstawicieli biznesu nieinteresująca.",
+   c:"Niepoprawna. Postęp testów jest związany z projektem, więc może być użyteczny dla biznesu.",
+   d:"Niepoprawna. Ryzyka wpływają na jakość produktu, więc mogą być użyteczne dla biznesu."}},
+
+/* ===================== OFICJALNY ZESTAW B (B1–B40) ===================== */
+{n:67,id:"B1",ch:1,lo:"FL-1.2.1",k:"K2",sel:1,
+ q:"Które z poniższych jest przykładem tego, dlaczego testowanie jest konieczne?",
+ opts:[["a","Testowanie dynamiczne podnosi jakość, doprowadzając przedmioty testów do awarii w sposób, jakiego użytkownicy nigdy by nie osiągnęli"],
+   ["b","Testowanie statyczne jest używane przez programistów do wykrywania awarii w kodzie wcześniej, niż jest to możliwe w testowaniu dynamicznym"],
+   ["c","Analiza statyczna dostarcza klientom dowodu, że elementy systemu nieprodukujące żadnych wyników nadają się do wydania"],
+   ["d","Przeglądy podnoszą jakość specyfikacji wymagań i prowadzą do mniejszej liczby zmian w pochodnych produktach pracy"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. Czasem testowanie dynamiczne potrafi doprowadzić do awarii niemożliwych dla użytkowników (np. przez wstrzykiwanie błędów), ale jeśli awaria nigdy nie wystąpi u realnych użytkowników, jej wykrycie ma małą wartość — testowanie ma ostatecznie ulepszać produkt dla użytkowników.",
+   b:"Niepoprawna. Analiza statyczna wykrywa wcześnie defekty (nie awarie) w kodzie. Błędem jest tu słowo „awarie” — awarie znajduje testowanie dynamiczne.",
+   c:"Niepoprawna. Analiza statyczna wykrywa anomalie w kodzie, zwykle dla programisty, nie klienta. „Dowód gotowości do wydania” elementów bez wyników to nonsens.",
+   d:"Poprawna. Przeglądy to forma testowania statycznego stosowana od początku SDLC; wykrywają defekty, które można usunąć, zanim kolejne czynności (projekt, kod) zmarnują wysiłek na wadliwych wymaganiach."}},
+
+{n:68,id:"B2",ch:1,lo:"FL-1.2.2",k:"K1",sel:1,
+ q:"Które stwierdzenie o zapewnianiu jakości (QA) i/lub kontroli jakości (QC) jest poprawne?",
+ opts:[["a","QA jest wykonywane jako część testowania"],
+   ["b","Testowanie jest wykonywane jako część QC"],
+   ["c","Testowanie to inne określenie QC"],
+   ["d","Testowanie jest wykonywane jako część QA"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. QA skupia się na doskonaleniu procesów (podejście prewencyjne), a testowanie to forma QC wykrywająca defekty.",
+   b:"Poprawna. QC dąży do odpowiedniego poziomu jakości przez wykrywanie i poprawianie defektów produktu; testowanie jest istotną częścią QC.",
+   c:"Niepoprawna. Testowanie jest częścią QC, ale QC obejmuje też inne techniki (metody formalne, weryfikacja modelowa, dowodzenie poprawności, symulacje, prototypowanie).",
+   d:"Niepoprawna. QA dotyczy procesów (prewencja), a testowanie to QC (wykrywanie defektów)."}},
+
+{n:69,id:"B3",ch:1,lo:"FL-1.3.1",k:"K2",sel:1,
+ q:"Jedna z zasad testowania mówi, że testowanie pełne jest niewykonalne. Co jest przykładem praktycznego zastosowania tej zasady?",
+ opts:[["a","Tworzenie przypadków testowych pokrywających każde możliwe określone wyjście"],
+   ["b","Udokumentowanie wszystkich możliwych wariantów danych wejściowych i ich priorytetyzacja według ważności"],
+   ["c","Rozpoczynanie testowania jak najwcześniej od przeglądów i innych metod statycznych"],
+   ["d","Użycie podziału na klasy równoważności i analizy wartości brzegowych do generowania przypadków testowych"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. Testowanie wszystkich wyjść nie rozwiązuje problemu — wejść może być praktycznie nieskończenie wiele, a relacja wejście–wyjście jest różna dla różnych przedmiotów testów.",
+   b:"Niepoprawna. Dla nietrywialnych systemów liczba wariantów wejść jest praktycznie nieskończona, więc udokumentowanie wszystkich jest niewykonalne.",
+   c:"Niepoprawna. Wczesne testowanie statyczne dotyczy innej zasady („wczesne testowanie oszczędza czas i pieniądze”), nie problemu zbyt wielu przypadków.",
+   d:"Poprawna. EP i BVA dają systematyczny sposób wyboru skończonego podzbioru ze wszystkich możliwych przypadków."}},
+
+{n:70,id:"B4",ch:1,lo:"FL-1.4.1",k:"K2",sel:1,
+ q:"Która czynność testowa obejmuje pracę z wymaganiami dotyczącymi danych testowych, warunkami testowymi, wymaganiami środowiska testowego oraz przypadkami testowymi?",
+ opts:[["a","Projektowanie testów"],["b","Wykonywanie testów"],["c","Analiza testów"],["d","Implementacja testów"]],
+ correct:["a"],
+ exp:{a:"Poprawna. Projektowanie testów przekształca warunki testowe w przypadki testowe i inne testalia (wymagania co do danych testowych, karty testów) oraz określa wymagania środowiska testowego.",
+   b:"Niepoprawna. Wykonywanie testów obejmuje uruchamianie przypadków, ale nie pozostałych wymienionych testaliów.",
+   c:"Niepoprawna. Analiza testów identyfikuje warunki testowe z podstawy testów, ale nie obejmuje pozostałych wymienionych elementów.",
+   d:"Niepoprawna. Implementacja tworzy procedury testowe, dane i środowisko, ale nie obejmuje warunków testowych (te powstają wcześniej)."}},
+
+{n:71,id:"B5",ch:1,lo:"FL-1.4.2",k:"K2",sel:1,
+ q:"Co NAJBARDZIEJ prawdopodobnie wpłynie na sposób przeprowadzania testów danego przedmiotu testów?",
+ opts:[["a","Średni poziom doświadczenia zespołu marketingu organizacji"],
+   ["b","Wiedza użytkowników, że tworzony jest dla nich nowy system"],
+   ["c","Liczba lat doświadczenia członków zespołu testowego"],
+   ["d","Struktura organizacyjna użytkownika końcowego komercyjnej aplikacji do streamingu muzyki"]],
+ correct:["c"],
+ exp:{a:"Niepoprawna. Zespół marketingu zwykle nie testuje, więc jego doświadczenie nie wpływa na sposób testowania.",
+   b:"Niepoprawna. Sama wiedza użytkowników o nowym systemie raczej nie wpływa na sposób testowania.",
+   c:"Poprawna. Liczba lat doświadczenia członków zespołu testowego determinuje umiejętności i wiedzę (np. o narzędziach i typach defektów), które wniosą do testowania.",
+   d:"Niepoprawna. Struktura organizacyjna różnych użytkowników końcowych jest zmienna i często nieznana podczas testowania, więc ma niewielki wpływ."}},
+
+{n:72,id:"B6",ch:1,lo:"FL-1.4.4",k:"K2",sel:1,
+ q:"Które stwierdzenie jest POPRAWNYM przykładem wartości identyfikowalności (traceability)?",
+ opts:[["a","Identyfikowalność między złagodzonymi ryzykami a zaliczonymi przypadkami testowymi pozwala określić poziom ryzyka resztkowego"],
+   ["b","Identyfikowalność między wymaganiami użytkownika a wynikami wykonania testów pozwala mierzyć postęp projektu względem celów biznesowych"],
+   ["c","Identyfikowalność między testerami a niezaliczonymi przypadkami testowymi pozwala określić poziom umiejętności testerów"],
+   ["d","Identyfikowalność między zidentyfikowanymi ryzykami a zapisanymi warunkami testowymi pozwala określić, które ryzyka warto testować"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. Aby ocenić ryzyko resztkowe, potrzebna jest identyfikowalność między WSZYSTKIMI ryzykami a wynikami testów (by wskazać ryzyka bez zaliczonego testu).",
+   b:"Poprawna. Powiązanie wymagań użytkownika z wynikami wykonania pokazuje, które wymagania przetestowano, co mierzy postęp projektu względem celów biznesowych.",
+   c:"Niepoprawna. Niezaliczone przypadki nie świadczą o umiejętnościach testerów; ocenianie testerów tą metryką bywa wręcz szkodliwe.",
+   d:"Niepoprawna. Powiązanie ryzyk z warunkami testowymi mówi, które dalsze warunki trzeba napisać; o tym, które ryzyka warto testować, decyduje zarządzanie ryzykiem."}},
+
+{n:73,id:"B7",ch:1,lo:"FL-1.5.1",k:"K2",sel:1,
+ q:"Co jest NAJBARDZIEJ prawdopodobnym przykładem użycia przez testera umiejętności ogólnej (generycznej) podczas testowania?",
+ opts:[["a","Głęboka znajomość gier komputerowych sprawiła, że tester dobrze dogadywał się z programistą, który też był graczem"],
+   ["b","Tester był wcześniej pilotem i dzięki temu lepiej rozumiał kryteria akceptacji systemu sterowania helikopterem"],
+   ["c","Tester wcześniej pracował jako programista i użył tych umiejętności do lepszej komunikacji z analitykami biznesowymi"],
+   ["d","Tester bardzo uważał, by nie popełnić pomyłek, metodycznie tworząc przypadki testowe przed rozpoczęciem sesji testów eksploracyjnych"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. Znajomość gier, która pomogła dogadać się z jednym programistą, nie jest przykładem umiejętności ogólnej przydatnej testerom.",
+   b:"Poprawna. Wiedza dziedzinowa pozwalająca rozumieć i komunikować się z interesariuszami to jedna z umiejętności ogólnych testera; doświadczenie pilota pomaga zrozumieć kryteria akceptacji systemu sterowania helikopterem.",
+   c:"Niepoprawna. Umiejętności programistyczne to wiedza techniczna; raczej nie poprawiają komunikacji z analitykami biznesowymi.",
+   d:"Niepoprawna. Skrupulatność jest przydatna, ale w testowaniu eksploracyjnym przypadki powstają w trakcie testowania, a nie są tworzone z góry."}},
+
+{n:74,id:"B8",ch:1,lo:"FL-1.5.2",k:"K1",sel:1,
+ q:"Co jest zaletą podejścia całego zespołu (whole-team approach)?",
+ opts:[["a","Pozwala członkom zespołu przyjmować dowolną rolę w dowolnym momencie"],
+   ["b","Wymaga tylko jednego zespołu do obsługi całego projektu deweloperskiego"],
+   ["c","Wymaga zaangażowania każdego członka zespołu w każdą ważną decyzję"],
+   ["d","Tworzy synergię zespołu, która przynosi korzyść całemu projektowi"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. Podejście pozwala członkowi o odpowiednich umiejętnościach podjąć dane zadanie, ale nie oznacza, że każdy może pełnić każdą rolę w dowolnym momencie.",
+   b:"Niepoprawna. Podejście dotyczy pracy jednego zespołu (zwykle zwinnego), a nie współpracy wielu zespołów w większych projektach.",
+   c:"Niepoprawna. Podejście nie wymaga udziału każdego w każdej decyzji (np. właściciel produktu nie musi uczestniczyć w decyzjach czysto technicznych) — spowalniałoby to zespół.",
+   d:"Poprawna. Najlepsze wykorzystanie różnorodnych umiejętności sprzyja komunikacji i współpracy oraz tworzy synergię korzystną dla całego projektu."}},
+
+{n:75,id:"B9",ch:2,lo:"FL-2.1.1",k:"K2",sel:1,
+ q:"Które stwierdzenie o wybranym cyklu życia oprogramowania jest POPRAWNE?",
+ opts:[["a","Przy zwinnym wytwarzaniu automatyzacja testów systemowych zastępuje potrzebę testowania regresji"],
+   ["b","Przy modelu sekwencyjnym testowanie dynamiczne jest zwykle ograniczone do późniejszych faz cyklu"],
+   ["c","Przy modelu iteracyjnym testowanie komponentów jest zwykle wykonywane ręcznie przez programistów"],
+   ["d","Przy modelu przyrostowym testowanie statyczne wykonuje się we wczesnych przyrostach, a dynamiczne w późniejszych"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. W podejściu zwinnym częste dostarczanie przyrostów wymaga intensywnej regresji; automatyzacja testów systemowych nie zastępuje testowania regresji.",
+   b:"Poprawna. W modelu sekwencyjnym wcześnie brak kodu do uruchomienia, więc wykonuje się testowanie statyczne (przeglądy); testowanie dynamiczne jest możliwe później, gdy kod jest gotowy.",
+   c:"Niepoprawna. W modelu iteracyjnym testy komponentów często służą regresji każdej iteracji, więc raczej się je automatyzuje, a nie wykonuje ręcznie.",
+   d:"Niepoprawna. W większości modeli przyrostowych każdy przyrost wymaga zarówno testowania statycznego, jak i dynamicznego na wszystkich poziomach."}},
+
+{n:76,id:"B10",ch:2,lo:"FL-2.1.2",k:"K1",sel:1,
+ q:"Która dobra praktyka testowa odnosi się do wszystkich cykli życia oprogramowania?",
+ opts:[["a","Testerzy powinni przeglądać produkty pracy w ramach kolejnej fazy wytwarzania"],
+   ["b","Testerzy powinni przeglądać produkty pracy, gdy tylko dostępne są ich wersje robocze"],
+   ["c","Testerzy powinni przeglądać produkty pracy przed rozpoczęciem analizy i projektowania testów"],
+   ["d","Testerzy powinni przeglądać produkty pracy zaraz po ich opublikowaniu"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. Czekanie do kolejnej fazy oznacza zbędną pracę na nieprzejrzanych, wadliwych produktach (sprzeczne z shift left).",
+   b:"Poprawna. Przeglądanie wersji roboczych, gdy tylko są dostępne, umożliwia wczesne testowanie (shift left).",
+   c:"Niepoprawna. Testerzy zwykle przeglądają produkty stanowiące podstawę testów w ramach analizy testów, a nie przed nią.",
+   d:"Niepoprawna. Czekanie do publikacji oznacza, że defekty wykrywalne w przeglądzie pozostaną w opublikowanym dokumencie."}},
+
+{n:77,id:"B11",ch:2,lo:"FL-2.1.3",k:"K1",sel:1,
+ q:"Co jest przykładem podejścia „najpierw test” (test-first) do wytwarzania oprogramowania?",
+ opts:[["a","Wytwarzanie sterowane testami (TDD)"],["b","Wytwarzanie sterowane pokryciem"],["c","Wytwarzanie sterowane jakością"],["d","Wytwarzanie sterowane funkcjami (FDD)"]],
+ correct:["a"],
+ exp:{a:"Poprawna. TDD to znany przykład podejścia „najpierw test”.",
+   b:"Niepoprawna. „Wytwarzanie sterowane pokryciem” nie jest podejściem test-first.",
+   c:"Niepoprawna. „Wytwarzanie sterowane jakością” nie jest podejściem test-first.",
+   d:"Niepoprawna. FDD to zwinna metodyka oparta na dostarczaniu funkcji, a nie podejście test-first."}},
+
+{n:78,id:"B12",ch:2,lo:"FL-2.1.4",k:"K2",sel:1,
+ q:"Które stwierdzenie o DevOps jest POPRAWNE?",
+ opts:[["a","Aby przyspieszyć wydania, ciągła integracja zachęca programistów do szybkiego wrzucania kodu bez konieczności ukończenia testowania komponentów"],
+   ["b","Aby częściej aktualizować i wydawać systemy, potrzeba wielu zautomatyzowanych testów regresji ograniczających ryzyko regresji"],
+   ["c","Aby traktować deweloperów i operacje równo, testerzy przeznaczają więcej wysiłku na testy wydaniowe operacji (shift-right)"],
+   ["d","Aby zwiększyć synergię, testowanie musi być w pełni zautomatyzowane, bez testów manualnych"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. W ciągłej integracji programiści wrzucają testy komponentów wraz z kodem i muszą one przejść, więc testowanie komponentów trzeba ukończyć.",
+   b:"Poprawna. DevOps wspiera testowanie m.in. przez zautomatyzowaną regresję minimalizującą ryzyko regresji oraz shift left z wysokiej jakości kodem i testami komponentów.",
+   c:"Niepoprawna. Testerzy nie „równoważą” deweloperów i operacji większym wysiłkiem na testy wydaniowe (choć shift-right, testy na produkcji, bywa stosowany).",
+   d:"Niepoprawna. CI/CD redukuje potrzebę testów manualnych, ale istnieje ryzyko pominięcia ich wartości (zwłaszcza z perspektywy użytkownika) — testy manualne pozostają potrzebne."}},
+
+{n:79,id:"B13",ch:2,lo:"FL-2.2.1",k:"K2",sel:1,
+ q:"Które z poniższych jest NAJBARDZIEJ prawdopodobne do wykonania w ramach testowania systemowego?",
+ opts:[["a","Testowanie bezpieczeństwa systemu zarządzania kredytami przez niezależny zespół testowy"],
+   ["b","Testowanie interfejsu systemu wymiany walut z zewnętrznym systemem bankowym"],
+   ["c","Testy beta systemu zdalnego nauczania wykonywane przez twórców materiałów szkoleniowych"],
+   ["d","Testowanie interakcji między komponentami systemu, np. interfejsem użytkownika a bazą danych"]],
+ correct:["a"],
+ exp:{a:"Poprawna. Testowanie systemowe bada zachowanie i możliwości całego systemu, w tym testy niefunkcjonalne (np. bezpieczeństwa); często wykonywane przez niezależny zespół na podstawie specyfikacji systemu.",
+   b:"Niepoprawna. Testowanie interfejsu z zewnętrznym systemem bankowym to testowanie integracji systemów.",
+   c:"Niepoprawna. Testy beta to rodzaj testów akceptacyjnych wykonywanych poza organizacją wytwórczą.",
+   d:"Niepoprawna. Testowanie interakcji między komponentami (np. UI a baza danych) to testowanie integracji komponentów."}},
+
+{n:80,id:"B14",ch:2,lo:"FL-2.2.3",k:"K2",sel:1,
+ q:"Które stwierdzenie jest POPRAWNE?",
+ opts:[["a","Liczba testów regresji rośnie w trakcie projektu, a liczba testów potwierdzających maleje"],
+   ["b","Testy regresji tworzy się i uruchamia po naprawie przedmiotu testów, a potwierdzające — gdy przedmiot jest rozbudowywany"],
+   ["c","Testowanie regresji sprawdza, czy środowisko operacyjne pozostało niezmienione, a potwierdzające — zmiany w przedmiocie testów"],
+   ["d","Testowanie regresji dotyczy niekorzystnych skutków w niezmienionym kodzie, a potwierdzające — testowania zmienionego kodu"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. Zarówno testy regresji, jak i potwierdzające zwykle rosną w trakcie projektu (nowe zmiany i nowe poprawki).",
+   b:"Niepoprawna. Jest odwrotnie: testy potwierdzające tworzy się po naprawie, a regresji uruchamia, gdy przedmiot testów się zmienia.",
+   c:"Niepoprawna. Testowanie regresji nie sprawdza „niezmienności środowiska”, lecz brak negatywnego wpływu zmian na niezmienione oprogramowanie.",
+   d:"Poprawna. Regresja — brak negatywnego wpływu zmian na niezmieniony kod; potwierdzające — sprawdzenie poprawności naprawy (zmieniony kod)."}},
+
+{n:81,id:"B15",ch:3,lo:"FL-3.1.2",k:"K2",sel:1,
+ q:"Co jest przykładem defektu wykrywalnego testowaniem statycznym, ale NIE testowaniem dynamicznym?",
+ opts:[["a","Brak użyteczności zapewnianej przez interfejs użytkownika"],
+   ["b","Kod, do którego nie prowadzi żadna ścieżka"],
+   ["c","Słabe czasy odpowiedzi dla większości oczekiwanych użytkowników"],
+   ["d","Wymagane funkcje, które nie zostały zaimplementowane w kodzie"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. Brak użyteczności można wykryć przeglądem, ale też dynamicznie (typowi użytkownicy testują UI).",
+   b:"Poprawna. Przegląd kodu wykryje kod nieosiągalny żadną ścieżką; testowanie dynamiczne uruchamia tylko osiągalny kod i nie stwierdzi nieosiągalności bez przejścia wszystkich kombinacji (niewykonalne).",
+   c:"Niepoprawna. Słabe czasy odpowiedzi trudno stwierdzić bez uruchomienia — to raczej testowanie dynamiczne.",
+   d:"Niepoprawna. Brak wymaganych funkcji można wykryć i przeglądem, i testowaniem dynamicznym."}},
+
+{n:82,id:"B16",ch:3,lo:"FL-3.2.1",k:"K1",sel:1,
+ q:"Co jest korzyścią wczesnej i częstej informacji zwrotnej od interesariuszy?",
+ opts:[["a","Menedżerowie wiedzą, którzy programiści są mniej produktywni"],
+   ["b","Pozwala kierownikom projektu priorytetyzować interakcje z interesariuszami"],
+   ["c","Ułatwia wczesną komunikację potencjalnych problemów z jakością"],
+   ["d","Użytkownicy końcowi lepiej rozumieją, dlaczego dostarczenie produktu się opóźnia"]],
+ correct:["c"],
+ exp:{a:"Niepoprawna. Informacja zwrotna pochodzi od interesariuszy i nie informuje o produktywności programistów.",
+   b:"Niepoprawna. Nie służy priorytetyzacji interakcji kierownika z interesariuszami.",
+   c:"Poprawna. Wczesna i częsta informacja zwrotna ułatwia wczesną komunikację problemów z jakością, zapobiega nieporozumieniom co do wymagań i przyspiesza reakcję na zmiany.",
+   d:"Niepoprawna. Wczesna informacja zwrotna ma zapobiegać opóźnieniom; informacja płynie OD interesariuszy, a nie do nich."}},
+
+{n:83,id:"B17",ch:3,lo:"FL-3.2.2",k:"K2",sel:1,
+ scenario:"<p>Dane są opisy zadań:</p><ul><li>1. Wybór charakterystyk jakości do oceny oraz kryteriów wyjścia</li><li>2. Wszyscy mają dostęp do produktu pracy</li><li>3. Identyfikowane są anomalie w produkcie pracy</li><li>4. Anomalie są omawiane</li></ul><p>oraz czynności przeglądu:</p><ul><li>A. Przegląd indywidualny</li><li>B. Inicjowanie przeglądu</li><li>C. Planowanie</li><li>D. Komunikacja i analiza</li></ul>",
+ q:"Które dopasowanie zadań i czynności jest NAJLEPSZE?",
+ opts:[["a","1B, 2C, 3D, 4A"],["b","1B, 2D, 3C, 4A"],["c","1C, 2A, 3B, 4D"],["d","1C, 2B, 3A, 4D"]],
+ correct:["d"],
+ exp:{_:"1. Wybór charakterystyk jakości i kryteriów wyjścia → Planowanie (C).\n2. Wszyscy mają dostęp do produktu pracy → Inicjowanie przeglądu (B).\n3. Identyfikacja anomalii w produkcie → Przegląd indywidualny (A).\n4. Omawianie anomalii → Komunikacja i analiza (D).\nPoprawne dopasowanie: 1C, 2B, 3A, 4D.",
+   a:"Niepoprawna.",b:"Niepoprawna.",c:"Niepoprawna.",d:"Poprawna — 1C, 2B, 3A, 4D."}},
+
+{n:84,id:"B18",ch:3,lo:"FL-3.2.3",k:"K1",sel:1,
+ scenario:"<p>Dane są role w przeglądach:</p><ul><li>1. Protokolant (scribe)</li><li>2. Lider przeglądu</li><li>3. Facylitator (moderator)</li><li>4. Kierownik</li></ul><p>oraz odpowiedzialności:</p><ul><li>A. Zapewnia efektywny przebieg spotkań i tworzy bezpieczne środowisko przeglądu</li><li>B. Zapisuje informacje z przeglądu, np. decyzje i nowe anomalie wykryte na spotkaniu</li><li>C. Decyduje, co poddać przeglądowi, i zapewnia zasoby (ludzi i czas)</li><li>D. Bierze ogólną odpowiedzialność za przegląd, np. organizuje, kiedy i gdzie się odbędzie</li></ul>",
+ q:"Które dopasowanie ról i odpowiedzialności jest NAJLEPSZE?",
+ opts:[["a","1A, 2B, 3D, 4C"],["b","1A, 2C, 3B, 4D"],["c","1B, 2D, 3A, 4C"],["d","1B, 2D, 3C, 4A"]],
+ correct:["c"],
+ exp:{_:"1. Protokolant → zapisuje informacje z przeglądu, decyzje i nowe anomalie (B).\n2. Lider przeglądu → ogólna odpowiedzialność, organizacja kiedy/gdzie (D).\n3. Facylitator (moderator) → zapewnia efektywny przebieg spotkania i bezpieczne środowisko (A).\n4. Kierownik → decyduje, co poddać przeglądowi, i zapewnia zasoby (C).\nPoprawne dopasowanie: 1B, 2D, 3A, 4C.",
+   a:"Niepoprawna.",b:"Niepoprawna.",c:"Poprawna — 1B, 2D, 3A, 4C.",d:"Niepoprawna."}},
+
+{n:85,id:"B19",ch:4,lo:"FL-4.1.1",k:"K2",sel:1,
+ q:"Które stwierdzenie NAJLEPIEJ opisuje różnicę między testowaniem z użyciem tablicy decyzyjnej a testowaniem gałęzi?",
+ opts:[["a","W tablicy decyzyjnej przypadki wynikają z instrukcji decyzyjnych w kodzie; w testowaniu gałęzi — z wiedzy o przepływie sterowania"],
+   ["b","W tablicy decyzyjnej przypadki wynikają ze specyfikacji opisującej logikę biznesową; w testowaniu gałęzi — z przewidywania potencjalnych defektów w kodzie"],
+   ["c","W tablicy decyzyjnej przypadki wynikają z wiedzy o przepływie sterowania; w testowaniu gałęzi — ze specyfikacji opisującej logikę biznesową"],
+   ["d","W tablicy decyzyjnej przypadki są niezależne od sposobu implementacji; w testowaniu gałęzi mogą powstać dopiero po projekcie lub implementacji kodu"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. Tablica decyzyjna to technika czarnoskrzynkowa (oparta na specyfikacji), nie na decyzjach w kodzie. W testowaniu gałęzi przypadki wynikają z przepływu sterowania.",
+   b:"Niepoprawna. Przewidywanie defektów to zgadywanie błędów (technika oparta na doświadczeniu), nie testowanie gałęzi. W tablicy decyzyjnej przypadki pochodzą ze specyfikacji logiki biznesowej.",
+   c:"Niepoprawna. Odwrotnie: tablica decyzyjna jest czarnoskrzynkowa (logika biznesowa), a testowanie gałęzi białoskrzynkowe (struktura kodu).",
+   d:"Poprawna. Tablica decyzyjna (czarnoskrzynkowa) jest niezależna od implementacji; testowanie gałęzi (białoskrzynkowe) wymaga znajomości struktury, więc przypadki można utworzyć dopiero po projekcie/implementacji."}},
+
+{n:86,id:"B20",ch:4,lo:"FL-4.2.1",k:"K3",sel:1,
+ scenario:"<p>Klienci sieci myjni TestWash mają karty z liczbą wykupionych dotąd myć. Wartość początkowa to 0. Po wjeździe do myjni system zwiększa numer na karcie o jeden — to numer bieżącego mycia. Na jego podstawie system ustala zniżkę.</p><p>Za każde dziesiąte mycie system daje 10% zniżki, a za każde dwudzieste — dodatkowe 40% (czyli łącznie 50%).</p>",
+ q:"Który zbiór danych wejściowych (numerów bieżącego mycia) osiąga najwyższe pokrycie klas równoważności?",
+ opts:[["a","19, 20, 30"],["b","11, 12, 20"],["c","1, 10, 50"],["d","10, 29, 30, 31"]],
+ correct:["a"],
+ exp:{a:"Poprawna. 19 → klasa „brak zniżki”, 20 → klasa „50% zniżki”, 30 → klasa „10% zniżki”. Te trzy wartości pokrywają wszystkie trzy poprawne klasy równoważności.",
+   b:"Niepoprawna. 11 i 12 → „brak zniżki”, 20 → „50%”; pokryte tylko 2 z 3 klas.",
+   c:"Niepoprawna. 1 → „brak zniżki”, 10 i 50 → „10%”; klasa „50%” niepokryta — 2 z 3.",
+   d:"Niepoprawna. 29 i 31 → „brak zniżki”, 10 i 30 → „10%”; klasa „50%” niepokryta — 2 z 3."}},
+{n:87,id:"B21",ch:4,lo:"FL-4.2.2",k:"K3",sel:1,
+ scenario:"<p>Testujesz formularz weryfikujący poprawność długości hasła. Formularz przyjmuje hasło o poprawnej długości, a odrzuca zbyt krótkie lub zbyt długie. Długość jest poprawna, gdy mieści się w zakresie od 6 do 12 znaków włącznie. Początkowo formularz jest pusty (długość = 0). Stosujesz analizę wartości brzegowych do zmiennej „długość hasła”.</p><p>Twój zestaw przypadków osiąga 100% pokrycia 2-punktową BVA. Zespół zdecydował, że z uwagi na wysokie ryzyko należy dodać przypadki dla 100% pokrycia 3-punktową BVA.</p>",
+ q:"Które dodatkowe długości haseł należy przetestować, aby to osiągnąć?",
+ opts:[["a","4, 5, 13, 14"],["b","7, 11"],["c","1, 5, 13"],["d","1, 4, 7, 11, 14"]],
+ correct:["d"],
+ exp:{_:"Klasy: za krótkie {0..5}, poprawne {6..12}, za długie {13,14,...}. Pełne pokrycie 3-punktowej BVA wymaga: 0, 1, 4, 5, 6, 7, 11, 12, 13, 14. 2-punktowa BVA już pokrywa: 0, 5, 6, 12, 13. Brakujące dla przejścia z 2- do 3-punktowej: 1, 4, 7, 11, 14.",
+   a:"Niepoprawna.",b:"Niepoprawna.",c:"Niepoprawna.",d:"Poprawna — 1, 4, 7, 11, 14."}},
+
+{n:88,id:"B22",ch:4,lo:"FL-4.2.3",k:"K3",sel:1,
+ scenario:"<p>Poniższa tablica decyzyjna zawiera reguły określania ryzyka miażdżycy:</p><table><tr><th></th><th>R1</th><th>R2</th><th>R3</th><th>R4</th><th>R5</th></tr><tr><th>Cholesterol (mg/dl)</th><td>≤124</td><td>≤124</td><td>125–200</td><td>125–200</td><td>≥201</td></tr><tr><th>Ciśnienie (mm Hg)</th><td>≤140</td><td>&gt;140</td><td>≤140</td><td>&gt;140</td><td>–</td></tr><tr><th>Poziom ryzyka</th><td>b. niski</td><td>niski</td><td>średni</td><td>wysoki</td><td>b. wysoki</td></tr></table><p>Zaprojektowano przypadki z danymi:</p><ul><li>TC1: Cholesterol = 125, Ciśnienie = 141</li><li>TC2: Cholesterol = 200, Ciśnienie = 201</li><li>TC3: Cholesterol = 124, Ciśnienie = 201</li><li>TC4: Cholesterol = 109, Ciśnienie = 200</li><li>TC5: Cholesterol = 201, Ciśnienie = 140</li></ul>",
+ q:"Jakie pokrycie tablicy decyzyjnej osiągają te przypadki testowe?",
+ opts:[["a","40%"],["b","60%"],["c","80%"],["d","100%"]],
+ correct:["b"],
+ exp:{_:"Tablica ma 5 kolumn (reguł), każdy przypadek pokrywa jedną. TC1 i TC2 pokrywają regułę 4 (125–200 i >140); TC3 i TC4 — regułę 2 (≤124 i >140); TC5 — regułę 5 (≥201). Pokryte 3 z 5 kolumn → (3/5)·100% = 60%.",
+   a:"Niepoprawna.",b:"Poprawna — 60%.",c:"Niepoprawna.",d:"Niepoprawna."}},
+
+{n:89,id:"B23",ch:4,lo:"FL-4.2.4",k:"K3",sel:1,
+ scenario:"<p>System magazynowy może pomieścić do trzech elementów; modeluje go poniższy diagram przejść stanów. Zmienna N oznacza liczbę aktualnie przechowywanych elementów. Zdarzenie „Add” zwiększa N o 1, „Remove” zmniejsza o 1. Gdy N=0, „Remove” jest niemożliwy; gdy N=3 (stan FULL), „Add” jest niemożliwy.</p><div class='diagram'>"+SVG_B23+"</div>",
+ q:"Który zbiór zdarzeń osiąga najwyższy poziom pokrycia prawidłowych przejść?",
+ opts:[["a","Add, Remove, Add, Add, Add"],["b","Add, Add, Add, Add, Remove, Remove"],["c","Add, Add, Add, Remove, Remove"],["d","Add, Add, Add, Remove, Add"]],
+ correct:["c"],
+ exp:{_:"Diagram ma 5 prawidłowych przejść. Ciąg c) Add, Add, Add, Remove, Remove przechodzi je wszystkie (100%). Ciąg b) jest niewykonalny: po trzech „Add” system jest w stanie FULL, z którego nie ma przejścia wyzwalanego przez „Add” (pokrywa tylko 60%). Ciągi a) i d) pokrywają po 4 z 5 przejść (80%).",
+   a:"Niepoprawna — 80% pokrycia.",b:"Niepoprawna — ciąg niewykonalny (4. „Add” z FULL).",c:"Poprawna — 100% pokrycia prawidłowych przejść.",d:"Niepoprawna — 80% pokrycia."}},
+
+{n:90,id:"B24",ch:4,lo:"FL-4.3.1",k:"K2",sel:1,
+ scenario:"<p>Uruchamiasz dwa przypadki testowe, T1 i T2, na tym samym kodzie. T1 osiągnął 40% pokrycia instrukcji, a T2 — 65% pokrycia instrukcji.</p>",
+ q:"Które zdanie musi być koniecznie prawdziwe?",
+ opts:[["a","Zestaw złożony z T1 i T2 osiąga 105% pokrycia instrukcji"],
+   ["b","Istnieje co najmniej jedna instrukcja wykonana zarówno przez T1, jak i T2"],
+   ["c","Co najmniej 5% instrukcji w testowanym kodzie jest niewykonywalnych"],
+   ["d","Zestaw złożony z T1 i T2 osiąga pełne pokrycie gałęzi"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. Pokrycie to procent pokrytych elementów — nie może przekroczyć 100%.",
+   b:"Poprawna. Gdyby instrukcje wykonane przez T1 i T2 były rozłączne, pokrycie zestawu wyniosłoby 105% (niemożliwe). Zatem co najmniej 5% instrukcji musiało zostać wykonane przez oba przypadki.",
+   c:"Niepoprawna. Pokrycie instrukcji nic nie mówi o liczbie instrukcji niewykonywalnych.",
+   d:"Niepoprawna. Pełne pokrycie instrukcji nie implikuje pełnego pokrycia gałęzi."}},
+
+{n:91,id:"B25",ch:4,lo:"FL-4.3.2",k:"K2",sel:1,
+ scenario:"<p>Niech miara pokrycia gałęzi będzie zdefiniowana jako BCov = (X / Y) · 100%.</p>",
+ q:"Co reprezentują X i Y w tym wzorze?",
+ opts:[["a","X = liczba wykonanych wyników decyzji; Y = łączna liczba wyników decyzji w kodzie"],
+   ["b","X = liczba wykonanych gałęzi warunkowych; Y = łączna liczba gałęzi w kodzie"],
+   ["c","X = liczba gałęzi wykonanych przez przypadki testowe; Y = łączna liczba gałęzi w kodzie"],
+   ["d","X = liczba wykonanych gałęzi warunkowych; Y = łączna liczba wyników decyzji w kodzie"]],
+ correct:["c"],
+ exp:{a:"Niepoprawna. Wynik decyzji to gałąź warunkowa; w pokryciu gałęzi X liczy także gałęzie bezwarunkowe.",
+   b:"Niepoprawna. Pokrycie gałęzi liczy nie tylko warunkowe, ale i bezwarunkowe gałęzie.",
+   c:"Poprawna. Pokrycie gałęzi = liczba gałęzi wykonanych przez przypadki / łączna liczba gałęzi · 100%.",
+   d:"Niepoprawna. X i Y liczyłyby tylko gałęzie warunkowe, pomijając bezwarunkowe."}},
+
+{n:92,id:"B26",ch:4,lo:"FL-4.4.2",k:"K2",sel:2,
+ q:"Które DWA stwierdzenia stanowią NAJLEPSZE uzasadnienie użycia testowania eksploracyjnego?",
+ opts:[["a","Testerom nie przydzielono wystarczająco czasu na projektowanie i wykonywanie testów"],
+   ["b","Obowiązująca strategia testów wymaga formalnych technik czarnoskrzynkowych"],
+   ["c","Specyfikacja jest napisana w języku formalnym przetwarzalnym przez narzędzie"],
+   ["d","Testerzy są członkami zwinnego zespołu i mają dobre umiejętności programistyczne"],
+   ["e","Testerzy mają doświadczenie w dziedzinie biznesowej i dobre zdolności analityczne"]],
+ correct:["a","e"],
+ exp:{a:"Poprawna. Testowanie eksploracyjne jest przydatne, gdy jest mało lub niepełnych specyfikacji albo gdy istnieje presja czasu.",
+   b:"Niepoprawna. Testowanie eksploracyjne nie jest techniką czarnoskrzynkową.",
+   c:"Niepoprawna. Eksploracyjne sprawdza się raczej przy słabo napisanych specyfikacjach.",
+   d:"Niepoprawna. Umiejętności programistyczne zasadniczo nie mają związku z testowaniem eksploracyjnym.",
+   e:"Poprawna. Jest skuteczniejsze, gdy tester ma doświadczenie, wiedzę dziedzinową i kluczowe umiejętności (analityczne, ciekawość, kreatywność)."}},
+
+{n:93,id:"B27",ch:4,lo:"FL-4.4.3",k:"K2",sel:1,
+ q:"Co NAJLEPIEJ pasuje jako element listy kontrolnej w testowaniu opartym na liście kontrolnej?",
+ opts:[["a","„Programista popełnił pomyłkę przy implementacji kodu”"],
+   ["b","„Osiągnięte pokrycie instrukcji przekracza 85%”"],
+   ["c","„Program działa poprawnie względem wymagań funkcjonalnych i niefunkcjonalnych”"],
+   ["d","„Komunikaty o błędach są napisane językiem zrozumiałym dla użytkownika”"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. To przykład pomyłki, a nie warunku testowego; opis zbyt ogólny.",
+   b:"Niepoprawna. To raczej kryterium wyjścia niż element listy kontrolnej.",
+   c:"Niepoprawna. Zbyt ogólne — opisuje wręcz cel testowania.",
+   d:"Poprawna. To warunek testowy, który człowiek może sprawdzić."}},
+
+{n:94,id:"B28",ch:4,lo:"FL-4.5.2",k:"K2",sel:1,
+ scenario:"<p>Rozważ kryterium akceptacji historyjki napisanej z perspektywy właściciela sklepu internetowego:</p><div class='scenario' style='margin:0'><p><i>Zakładając, że</i> użytkownik jest zalogowany i na stronie głównej,<br><i>kiedy</i> użytkownik kliknie przycisk „Dodaj produkt”,<br><i>wtedy</i> powinien pojawić się formularz „Utwórz produkt”,<br><i>i</i> użytkownik powinien móc wprowadzić nazwę oraz cenę nowego produktu.</p></div>",
+ q:"W jakim formacie zapisano to kryterium akceptacji?",
+ opts:[["a","Zorientowany na reguły"],["b","Zorientowany na scenariusz"],["c","Zorientowany na produkt"],["d","Zorientowany na proces"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. Format zorientowany na reguły to np. listy punktów lub tabele odwzorowań wejście–wyjście. Given/When/Then opisuje scenariusz.",
+   b:"Poprawna. To format Given/When/Then (zakładając/kiedy/wtedy) — zorientowany na scenariusz.",
+   c:"Niepoprawna. Nie istnieje format „zorientowany na produkt” kryteriów akceptacji.",
+   d:"Niepoprawna. Nie istnieje format „zorientowany na proces” kryteriów akceptacji."}},
+
+{n:95,id:"B29",ch:4,lo:"FL-4.5.3",k:"K3",sel:1,
+ scenario:"<p>Zespół analizuje historyjkę, aby zdefiniować kryteria akceptacji:</p><p><i>Jako zarejestrowany klient chcę móc przeglądać moje poprzednie zamówienia na stronie firmy, aby śledzić swoje zakupy.</i></p>",
+ q:"Który przypadek testowy NIE będzie istotny dla tej historyjki?",
+ opts:[["a","Wejście: klient loguje się na konto i klika „zobacz historię zamówień”. Oczekiwane: system pokazuje listę wszystkich poprzednich zamówień (data, numer, łączny koszt)"],
+   ["b","Wejście: klient klika zamówienie z listy. Oczekiwane: system wyświetla zakupione pozycje wraz z cenami i ilościami"],
+   ["c","Wejście: klient klika „Sortuj rosnąco” na ekranie historii. Oczekiwane: system pokazuje historię posortowaną po numerze zamówienia rosnąco"],
+   ["d","Wejście: niezarejestrowany klient rejestruje się z poprawnym, nieistniejącym jeszcze adresem e-mail. Oczekiwane: system akceptuje rejestrację i tworzy konto"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. Przypadek dotyczy przeglądania historii zamówień.",
+   b:"Niepoprawna. Przypadek dotyczy przeglądania poprzednich zamówień.",
+   c:"Niepoprawna. Przypadek dotyczy przeglądania historii zamówień (sortowanie).",
+   d:"Poprawna. Przypadek dotyczy rejestracji, której ta historyjka nie obejmuje (jest o przeglądaniu poprzednich zamówień)."}},
+
+{n:96,id:"B30",ch:5,lo:"FL-5.1.3",k:"K2",sel:1,
+ scenario:"<p>Twój zespół stosuje potok dostarczania DevOps. Pierwsze trzy kroki procesu to:</p><ul><li>(1) Wytworzenie kodu</li><li>(2) Wrzucenie kodu do systemu kontroli wersji i scalenie z gałęzią „test”</li><li>(3) Wykonanie testów komponentów dla wrzuconego kodu</li></ul>",
+ q:"Co NAJLEPIEJ nadaje się jako kryterium wejścia dla kroku (2) tego potoku?",
+ opts:[["a","Analiza statyczna nie zwraca ostrzeżeń o wysokiej istotności dla wrzucanego kodu"],
+   ["b","System kontroli wersji nie zgłasza konfliktów przy scalaniu kodu z gałęzią „test”"],
+   ["c","Testy komponentów są skompilowane i gotowe do wykonania"],
+   ["d","Pokrycie instrukcji wynosi co najmniej 80%"]],
+ correct:["a"],
+ exp:{a:"Poprawna. Brak ostrzeżeń o wysokiej istotności z analizy statycznej można (i należy) sprawdzić zanim kod trafi do kontroli wersji.",
+   b:"Niepoprawna. Brak konfliktów scalania można sprawdzić dopiero po kroku (2), po wrzuceniu i scaleniu kodu.",
+   c:"Niepoprawna. To pasuje raczej jako kryterium wejścia kroku (3).",
+   d:"Niepoprawna. To pasuje raczej jako kryterium wyjścia kroku (3)."}},
+
+{n:97,id:"B31",ch:5,lo:"FL-5.1.4",k:"K3",sel:1,
+ scenario:"<p>Chcesz oszacować pracochłonność testów nowego projektu metodą opartą na proporcjach. Stosunek pracochłonności testów do wytwarzania liczysz z uśrednionych danych z czterech podobnych projektów historycznych:</p><table><tr><th>Projekt</th><th>Wytwarzanie ($)</th><th>Testy ($)</th></tr><tr><td>P1</td><td>800 000</td><td>40 000</td></tr><tr><td>P2</td><td>1 200 000</td><td>130 000</td></tr><tr><td>P3</td><td>600 000</td><td>70 000</td></tr><tr><td>P4</td><td>1 000 000</td><td>120 000</td></tr></table><p>Szacowana pracochłonność wytwarzania nowego projektu to 800 000 $.</p>",
+ q:"Jaka jest Twoja estymata pracochłonności testów w tym projekcie?",
+ opts:[["a","40 000 $"],["b","80 000 $"],["c","81 250 $"],["d","82 500 $"]],
+ correct:["b"],
+ exp:{_:"Średni koszt wytwarzania = 900 000 $, średni koszt testów = 90 000 $ (z 4 projektów). Średni stosunek testy : wytwarzanie = 1 : 10 (10%). Dla wytwarzania 800 000 $ szacowany koszt testów = 10% · 800 000 = 80 000 $.",
+   a:"Niepoprawna.",b:"Poprawna — 80 000 $.",c:"Niepoprawna.",d:"Niepoprawna."}},
+
+{n:98,id:"B32",ch:5,lo:"FL-5.1.5",k:"K3",sel:1,
+ scenario:"<p>Testujesz aplikację webową pozwalającą WYSZUKAĆ produkty (SEARCH), zobaczyć ich szczegóły (VIEW), DODAĆ do koszyka (ADD) i złożyć ZAMÓWIENIE (ORDER). Przygotowałeś pięć przypadków do wykonania zgodnie z priorytetami:</p><table><tr><th>Przypadek</th><th>Priorytet</th></tr><tr><td>TC1: SEARCH produktu A</td><td>średni</td></tr><tr><td>TC2: VIEW szczegółów produktu A</td><td>niski</td></tr><tr><td>TC3: ADD produktu B do koszyka</td><td>średni</td></tr><tr><td>TC4: ADD produktu C do koszyka</td><td>wysoki</td></tr><tr><td>TC5: ORDER (złożenie zamówienia)</td><td>wysoki</td></tr></table><p>Zależności logiczne: SEARCH przed VIEW; VIEW przed ADD; ADD przed ORDER.</p>",
+ q:"Który przypadek testowy powinien być wykonany jako czwarty?",
+ opts:[["a","TC3"],["b","TC1"],["c","TC2"],["d","TC4"]],
+ correct:["a"],
+ exp:{_:"Z zależności: najpierw SEARCH, potem VIEW, potem ADD, na końcu ORDER. W obrębie grup decyduje priorytet. Kolejność: TC1, TC2, TC4, TC3, TC5. Czwarty wykonywany jest TC3.",
+   a:"Poprawna — TC3.",b:"Niepoprawna.",c:"Niepoprawna.",d:"Niepoprawna."}},
+
+{n:99,id:"B33",ch:5,lo:"FL-5.1.7",k:"K2",sel:1,
+ q:"Zgodnie z modelem kwadrantów zwinnego testowania, co należy do kwadrantu Q1 („zorientowany na technologię” i „wspierający zespół”)?",
+ opts:[["a","Testowanie użyteczności"],["b","Testowanie funkcjonalne"],["c","Testy akceptacyjne użytkownika"],["d","Testowanie integracji komponentów"]],
+ correct:["d"],
+ exp:{a:"Niepoprawna. Testowanie użyteczności jest zorientowane na biznes i krytykuje produkt (Q3).",
+   b:"Niepoprawna. Testowanie funkcjonalne jest zorientowane na biznes (Q2).",
+   c:"Niepoprawna. Testy akceptacyjne użytkownika są zorientowane na biznes i krytykują produkt (Q3).",
+   d:"Poprawna. Testowanie integracji komponentów jest zorientowane na technologię i wspiera zespół (Q1)."}},
+
+{n:100,id:"B34",ch:5,lo:"FL-5.2.4",k:"K2",sel:1,
+ scenario:"<p>Dane są ryzyka:</p><ul><li>1. Nieefektywna implementacja pętli powoduje długie czasy odpowiedzi systemu</li><li>2. Konsumenci zmieniają swoje preferencje</li><li>3. Zalanie serwerowni</li><li>4. Pacjenci powyżej pewnego wieku otrzymują niedokładne raporty</li></ul><p>oraz działania ograniczające ryzyko:</p><ul><li>A. Akceptacja ryzyka</li><li>B. Testowanie wydajnościowe</li><li>C. Użycie analizy wartości brzegowych jako techniki testowania</li><li>D. Transfer ryzyka</li></ul>",
+ q:"Które dopasowanie ryzyk do działań jest NAJLEPSZE?",
+ opts:[["a","1C, 2D, 3A, 4B"],["b","1B, 2D, 3A, 4C"],["c","1B, 2A, 3D, 4C"],["d","1C, 2A, 3D, 4B"]],
+ correct:["c"],
+ exp:{_:"1. Długie czasy odpowiedzi → testowanie wydajnościowe (B).\n2. Zmiana preferencji konsumentów → zwykle poza naszą kontrolą, akceptacja ryzyka (A).\n3. Zalanie serwerowni → transfer ryzyka, np. ubezpieczenie (D).\n4. Niedokładne raporty dla pacjentów powyżej pewnego wieku → problem brzegowy, BVA (C).\nPoprawne dopasowanie: 1B, 2A, 3D, 4C.",
+   a:"Niepoprawna.",b:"Niepoprawna.",c:"Poprawna — 1B, 2A, 3D, 4C.",d:"Niepoprawna."}},
+
+{n:101,id:"B35",ch:5,lo:"FL-5.3.1",k:"K1",sel:1,
+ q:"Który z poniższych jest przykładem metryki jakości produktu?",
+ opts:[["a","Średni czas do awarii (MTTF)"],["b","Liczba znalezionych defektów"],["c","Pokrycie wymagań"],["d","Procent wykrytych defektów"]],
+ correct:["a"],
+ exp:{a:"Poprawna. Metryki jakości produktu mierzą charakterystyki jakości; MTTF mierzy dojrzałość — to metryka jakości produktu.",
+   b:"Niepoprawna. To metryka defektów, a nie jakości produktu.",
+   c:"Niepoprawna. To metryka pokrycia, a nie jakości produktu.",
+   d:"Niepoprawna. To metryka defektów, a nie jakości produktu."}},
+
+{n:102,id:"B36",ch:5,lo:"FL-5.3.3",k:"K2",sel:1,
+ scenario:"<p>Jesteś członkiem zespołu testowego w Ameryce Północnej, tworzącego produkt dla klienta w Europie. Zespół jest zwinny, stosuje DevOps oraz potok CI/CD.</p>",
+ q:"Który sposób komunikowania postępu testów klientowi jest NAJMNIEJ efektywny?",
+ opts:[["a","Spotkanie twarzą w twarz"],["b","Pulpity (dashboardy)"],["c","E-mail"],["d","Wideokonferencja"]],
+ correct:["a"],
+ exp:{a:"Poprawna. Klient jest w innej lokalizacji i strefie czasowej, więc komunikacja twarzą w twarz może być trudna.",
+   b:"Niepoprawna. Pulpity są zwykle dostępne dla każdego o każdej porze — różnica stref nie przeszkadza.",
+   c:"Niepoprawna. Mimo różnicy czasu e-mail to wciąż mniejsza przeszkoda niż spotkanie twarzą w twarz.",
+   d:"Niepoprawna. Wideokonferencje to wygodny środek komunikacji, mniej uciążliwy niż spotkanie twarzą w twarz."}},
+
+{n:103,id:"B37",ch:5,lo:"FL-5.4.1",k:"K2",sel:1,
+ q:"Co NAJLEPIEJ opisuje przykład wsparcia testowania przez zarządzanie konfiguracją (CM)?",
+ opts:[["a","Mając numer wersji środowiska, narzędzie CM może odczytać numery wersji bibliotek, zaślepek i sterowników użytych w tym środowisku"],
+   ["b","Mając zapis wartości wejść testowych, narzędzie CM wykonuje przypadki dla tych konfiguracji i liczy pokrycie"],
+   ["c","Mając datę zakupu licencji, narzędzie CM automatycznie informuje o zbliżającym się końcu licencji"],
+   ["d","Mając numer wersji przypadku testowego, narzędzie CM automatycznie generuje dla niego dane testowe"]],
+ correct:["a"],
+ exp:{a:"Poprawna. Dla złożonego elementu konfiguracji (np. środowiska testowego) CM zapisuje jego składniki, ich relacje i wersje.",
+   b:"Niepoprawna. Narzędzia CM nie wykonują przypadków testowych ani nie liczą pokrycia.",
+   c:"Niepoprawna. Narzędzie CM nie jest narzędziem do zarządzania licencjami.",
+   d:"Niepoprawna. Narzędzia CM nie generują danych testowych."}},
+
+{n:104,id:"B38",ch:5,lo:"FL-5.5.1",k:"K3",sel:1,
+ scenario:"<p>Testujesz funkcję sortującą, która dostaje zbiór liczb i zwraca ten sam zbiór posortowany rosnąco. Log z wykonania:</p><div class='scenario' style='margin:0;font-family:var(--mono);font-size:12.5px'><p>Konfiguracja: sort build 2.002.2182, zestaw: TCS-3, liczba TC: 5 · Test run ID: 736<br>TC1. Wejście: 3 → Wyjście: 3 → <b>zaliczony</b><br>TC2. Wejście: 3 11 6 5 → Wyjście: 3 5 6 11 → <b>zaliczony</b><br>TC3. Wejście: 8 7 3 7 1 → Wyjście: 1 3 7 8 → <b>niezaliczony</b><br>TC4. Wejście: -2 -2 -2 -3 -3 → Wyjście: -3 -2 → <b>niezaliczony</b><br>TC5. Wejście: 0 -2 0 3 4 4 → Wyjście: -2 0 3 4 → <b>niezaliczony</b></p></div>",
+ q:"Który opis awarii NAJLEPIEJ nadaje się do raportu o defekcie?",
+ opts:[["a","System nie sortuje kilku zbiorów liczb. Odniesienie: TC3, TC4, TC5"],
+   ["b","System zdaje się pomijać duplikaty podczas sortowania. Odniesienie: TC3, TC4, TC5"],
+   ["c","System nie sortuje liczb ujemnych. Odniesienie: TC4, TC5"],
+   ["d","TC3, TC4 i TC5 mają defekty (zduplikowane dane wejściowe) i należy je poprawić"]],
+ correct:["b"],
+ exp:{a:"Niepoprawna. Zdanie jest prawdziwe, ale daje programiście niewiele wartości.",
+   b:"Poprawna. Z wyników wynika, że system ignoruje duplikaty i sortuje listę bez powtórzeń — prawdopodobna przyczyna awarii TC3, TC4, TC5; taka informacja pomaga sprawniej znaleźć i naprawić defekt.",
+   c:"Niepoprawna. System nie zawodzi przy liczbach ujemnych — problemem jest pomijanie duplikatów.",
+   d:"Niepoprawna. TC3, TC4, TC5 zawodzą, ale nic nie wskazuje, że same przypadki testowe mają defekty."}},
+
+{n:105,id:"B39",ch:6,lo:"FL-6.1.1",k:"K2",sel:1,
+ scenario:"<p>Dane są opisy:</p><ul><li>1. Wspieranie śledzenia przepływu pracy</li><li>2. Ułatwianie komunikacji</li><li>3. Maszyny wirtualne</li><li>4. Wspieranie przeglądów</li></ul><p>oraz kategorie narzędzi testowych:</p><ul><li>A. Narzędzia testowania statycznego</li><li>B. Narzędzia wspierające skalowalność i standaryzację wdrożeń</li><li>C. Narzędzia DevOps</li><li>D. Narzędzia do współpracy</li></ul>",
+ q:"Które dopasowanie opisów do kategorii narzędzi jest NAJLEPSZE?",
+ opts:[["a","1A, 2B, 3C, 4D"],["b","1B, 2D, 3C, 4A"],["c","1C, 2D, 3B, 4A"],["d","1D, 2C, 3A, 4B"]],
+ correct:["c"],
+ exp:{_:"A. Narzędzia testowania statycznego → wspierają przeglądy (4).\nB. Narzędzia skalowalności i standaryzacji wdrożeń → np. maszyny wirtualne (3).\nC. Narzędzia DevOps → śledzenie przepływu pracy, CI/CD (1).\nD. Narzędzia do współpracy → ułatwiają komunikację (2).\nPoprawne dopasowanie: 1C, 2D, 3B, 4A.",
+   a:"Niepoprawna.",b:"Niepoprawna.",c:"Poprawna — 1C, 2D, 3B, 4A.",d:"Niepoprawna."}},
+
+{n:106,id:"B40",ch:6,lo:"FL-6.2.1",k:"K1",sel:1,
+ q:"Co jest NAJBARDZIEJ prawdopodobną korzyścią automatyzacji testów?",
+ opts:[["a","Dostarcza miary pokrycia zbyt skomplikowane do ręcznego wyliczenia przez człowieka"],
+   ["b","Dzieli odpowiedzialność za testowanie z dostawcą narzędzia"],
+   ["c","Eliminuje potrzebę krytycznego myślenia przy analizie wyników testów"],
+   ["d","Generuje przypadki testowe na podstawie analizy kodu programu"]],
+ correct:["a"],
+ exp:{a:"Poprawna. Automatyzacja dostarcza miary (np. białoskrzynkowe pokrycie), które dla nietrywialnego kodu są zbyt skomplikowane do ręcznego wyliczenia.",
+   b:"Niepoprawna. Użycie narzędzia nie przenosi odpowiedzialności za testowanie na dostawcę.",
+   c:"Niepoprawna. Testerzy nadal muszą krytycznie analizować anomalie w wynikach.",
+   d:"Niepoprawna. Z samego kodu nie da się wygenerować przypadków — kod nie zawiera oczekiwanych wyników (potrzebna inna podstawa testów)."}}
+];
+</script>
+<script src="practice.js?v=1"></script>
+<script src="app.js?v=6"></script>
+<script src="podcast.js?v=1"></script>
+<script src="flashcards.js?v=4"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js");
+  }
+</script>
+</body>
+</html>
